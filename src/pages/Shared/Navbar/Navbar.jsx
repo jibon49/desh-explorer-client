@@ -1,6 +1,41 @@
 import { NavLink } from "react-router-dom";
 
 const Navbar = () => {
+  const navOptions = (
+    <>
+      <li>
+        <NavLink to="/" className="hover:text-site-main">
+          Home
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/" className="hover:text-site-main">
+          Tour
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/" className="hover:text-site-main">
+          Custom Tour
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/" className="hover:text-site-main">
+          Group Tour
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/" className="hover:text-site-main">
+          Blogs & review
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/" className="hover:text-site-main">
+          Complain
+        </NavLink>
+      </li>
+    </>
+  );
+
   return (
     <div className="navbar px-5 sticky top-0 glass z-10">
       {/* Left Section - Logo */}
@@ -26,23 +61,12 @@ const Navbar = () => {
             tabIndex={0}
             className="menu-sm dropdown-content text-[#363636] mt-3 z-[1] p-2 bg-base-100 w-52"
           >
-            <li>
-              <NavLink to="/">Home</NavLink>
-            </li>
-            <li>
-              <NavLink to="/destinations">Destinations</NavLink>
-            </li>
-            <li>
-              <NavLink to="/packages">Packages</NavLink>
-            </li>
-            <li>
-              <NavLink to="/contact">Contact</NavLink>
-            </li>
+            {navOptions}
           </ul>
         </div>
         <div className="flex items-center gap-4">
           <img className="h-12" />
-          <a className="normal-case font-extrabold text-xl text-primary">
+          <a className="normal-case font-extrabold text-xl text-site-main">
             Desh Travel
           </a>
         </div>
@@ -51,32 +75,16 @@ const Navbar = () => {
       {/* Center Navigation Links */}
       <div className="navbar-center hidden lg:flex">
         <ul className="flex gap-5 px-1">
-          <li>
-            <NavLink to="/" className="hover:text-primary">
-              Home
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/destinations" className="hover:text-primary">
-              Destinations
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/packages" className="hover:text-primary">
-              Packages
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/contact" className="hover:text-primary">
-              Contact
-            </NavLink>
-          </li>
+          {navOptions}
         </ul>
       </div>
 
       {/* Right Section - Placeholder for Login/Signup (if needed) */}
       <div className="navbar-end">
-        <NavLink to="/login" className="hover:bg-[#16eead] bg-base-200 px-6 py-2 rounded-xl font-semibold">
+        <NavLink
+          to="/login"
+          className="hover:bg-site-main hover:text-white bg-base-200 px-6 py-2 rounded-xl font-semibold"
+        >
           Login
         </NavLink>
       </div>
