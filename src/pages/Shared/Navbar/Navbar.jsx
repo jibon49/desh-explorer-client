@@ -1,43 +1,32 @@
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
 const Navbar = () => {
-  const navOptions = (
-    <>
-      <li>
-        <NavLink to="/" className="hover:text-site-main">
-          Home
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/" className="hover:text-site-main">
-          Tour
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/" className="hover:text-site-main">
-          Custom Tour
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/" className="hover:text-site-main">
-          Group Tour
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/" className="hover:text-site-main">
-          Blogs & review
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/" className="hover:text-site-main">
-          Complain
-        </NavLink>
-      </li>
-    </>
-  );
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
-    <div className="navbar px-5 sticky top-0 glass z-10">
+    <div
+      className={`navbar px-5 w-full fixed top-0 left-0 z-20 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/80 text-black backdrop-blur-md shadow-md"
+          : "bg-transparent text-white"
+      }`}
+    >
       {/* Left Section - Logo */}
       <div className="navbar-start">
         <div className="dropdown">
@@ -61,7 +50,7 @@ const Navbar = () => {
             tabIndex={0}
             className="menu-sm dropdown-content text-[#363636] mt-3 z-[1] p-2 bg-base-100 w-52"
           >
-            {navOptions}
+            {/* Navigation Links */}
           </ul>
         </div>
         <div className="flex items-center gap-4">
@@ -75,11 +64,40 @@ const Navbar = () => {
       {/* Center Navigation Links */}
       <div className="navbar-center hidden lg:flex">
         <ul className="flex gap-5 px-1">
-          {navOptions}
+          <li>
+            <NavLink to="/" className="font-bold hover:text-site-main">
+              Home
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/" className="font-bold hover:text-site-main">
+              Tour
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/" className="font-bold hover:text-site-main">
+              Custom Tour
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/" className="font-bold hover:text-site-main">
+              Group Tour
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/" className="font-bold hover:text-site-main">
+              Blogs & review
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/" className="font-bold hover:text-site-main">
+              Complain
+            </NavLink>
+          </li>
         </ul>
       </div>
 
-      {/* Right Section - Placeholder for Login/Signup (if needed) */}
+      {/* Right Section - Login Button */}
       <div className="navbar-end">
         <NavLink
           to="/login"
