@@ -2,6 +2,7 @@
 @plugin "daisyui";
 
 @theme {
-    --font-display: "Satoshi", "sans-serif";
+    --font-logo-font: "Charm", cursive;
+    --font-main-font: "Poppins", sans-serif;
     --color-site-main:#177BA5;
   }

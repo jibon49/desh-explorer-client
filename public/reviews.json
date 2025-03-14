@@ -1,0 +1,39 @@
+[
+    {
+      "id": 1,
+      "name": "John Doe",
+      "image": "https://randomuser.me/api/portraits/men/1.jpg",
+      "review": "This was an amazing experience! Highly recommended."
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "image": "https://randomuser.me/api/portraits/women/2.jpg",
+      "review": "Absolutely loved the service. Would definitely book again!"
+    },
+    {
+      "id": 3,
+      "name": "Michael Johnson",
+      "image": "https://randomuser.me/api/portraits/men/3.jpg",
+      "review": "A truly unforgettable trip. Thank you so much!"
+    },
+    {
+      "id": 4,
+      "name": "Emily Davis",
+      "image": "https://randomuser.me/api/portraits/women/4.jpg",
+      "review": "Great experience! Everything was well-organized."
+    },
+    {
+      "id": 5,
+      "name": "David Brown",
+      "image": "https://randomuser.me/api/portraits/men/5.jpg",
+      "review": "Exceptional service and a wonderful trip!"
+    },
+    {
+      "id": 6,
+      "name": "Sophia Wilson",
+      "image": "https://randomuser.me/api/portraits/women/6.jpg",
+      "review": "Loved the itinerary! Everything was smooth and fun."
+    }
+  ]
+  

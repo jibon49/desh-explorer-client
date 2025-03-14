@@ -1,7 +1,7 @@
 import React from "react";
-import bgImage from "../../../assets/banner.jpeg"; // Ensure the correct path to your image
 
-const Banner = ({ heading, text }) => {
+
+const Banner = ({bgImage, heading, text }) => {
   return (
     <div>
       <div

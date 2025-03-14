@@ -1,0 +1,183 @@
+[
+    {
+      "id": 1,
+      "title": "Saint Martin",
+      "image": "https://i.ibb.co.com/7J23Bb3J/saintmartin.jpg",
+      "type": "Chill",
+      "duration": "2 Night 3 Day",
+      "date": "20.5.23",
+      "price": 850
+    },
+    {
+      "id": 2,
+      "title": "Cox’s Bazar",
+      "image": "https://i.ibb.co.com/tpZR4yn7/What-are-the-most-unique-things-to-do-in-Coxs-Bazar.jpg",
+      "type": "Relax",
+      "duration": "3 Night 4 Day",
+      "date": "15.6.23",
+      "price": 750
+    },
+    {
+      "id": 3,
+      "title": "Sundarbans",
+      "image": "https://i.ibb.co.com/39JSrf9v/istockphoto-1890258882-612x612.jpg",
+      "type": "Adventure",
+      "duration": "4 Night 5 Day",
+      "date": "10.7.23",
+      "price": 950
+    },
+    {
+      "id": 4,
+      "title": "Sajek Valley",
+      "image": "https://i.ibb.co.com/r25RMmNV/Sajek-valley-Sun-Rise.jpg",
+      "type": "Nature",
+      "duration": "2 Night 3 Day",
+      "date": "12.8.23",
+      "price": 820
+    },
+    {
+      "id": 5,
+      "title": "Bandarban",
+      "image": "https://i.ibb.co.com/gZr671Dc/360-F-360905134-TVGIy0-ZKOQVmx-OR9q-E3du-Jlv-TBBEWv8p.jpg",
+      "type": "Explore",
+      "duration": "3 Night 4 Day",
+      "date": "5.9.23",
+      "price": 890
+    },
+    {
+      "id": 6,
+      "title": "Kuakata",
+      "image": "https://i.ibb.co.com/Qv4FkVR3/Screenshot-26.png",
+      "type": "Beach",
+      "duration": "2 Night 3 Day",
+      "date": "1.10.23",
+      "price": 770
+    },
+    {
+      "id": 7,
+      "title": "Rangamati",
+      "image": "https://i.ibb.co.com/yBVZT6yW/7a.jpg",
+      "type": "Relax",
+      "duration": "2 Night 3 Day",
+      "date": "14.11.23",
+      "price": 800
+    },
+    {
+      "id": 8,
+      "title": "Srimangal",
+      "image": "https://i.ibb.co.com/hQdFjLb/665708-syletteagarden-x65070.jpg",
+      "type": "Eco-tour",
+      "duration": "3 Night 4 Day",
+      "date": "22.12.23",
+      "price": 850
+    },
+    {
+      "id": 9,
+      "title": "Chittagong Hill Tracts",
+      "image": "https://i.ibb.co.com/GfnDX8kT/Is-Chittagong-Hill-Tracts-safe-for-tourists-to-explore.jpg",
+      "type": "Trekking",
+      "duration": "4 Night 5 Day",
+      "date": "5.1.24",
+      "price": 980
+    },
+    {
+      "id": 10,
+      "title": "Sylhet",
+      "image": "https://i.ibb.co.com/N66j78hH/1.webp",
+      "type": "Nature",
+      "duration": "2 Night 3 Day",
+      "date": "18.2.24",
+      "price": 810
+    },
+    {
+      "id": 11,
+      "title": "Paharpur",
+      "image": "https://i.ibb.co.com/1GspsF8c/360-F-523870228-v-KOEVofow-Os-Ai3-K6u-Z8ch-Xk-MGSe-JWZb-L.jpg",
+      "type": "Historical",
+      "duration": "3 Night 4 Day",
+      "date": "10.3.24",
+      "price": 730
+    },
+    {
+      "id": 12,
+      "title": "Bagerhat",
+      "image": "https://i.ibb.co.com/xtHHV3CV/360-F-308445455-Bx-NQj-JCS2t-L8-Fe-Occ-RXZd-Nf-Lhrj-Z2-Df4.jpg",
+      "type": "Cultural",
+      "duration": "3 Night 4 Day",
+      "date": "15.4.24",
+      "price": 790
+    },
+    {
+      "id": 13,
+      "title": "Maheshkhali",
+      "image": "https://i.ibb.co.com/HfC99xGY/0b1d37fa042ac8d4301015908bb4a300.jpg",
+      "type": "Island",
+      "duration": "2 Night 3 Day",
+      "date": "25.5.24",
+      "price": 870
+    },
+    {
+      "id": 14,
+      "title": "Puthia Rajbari",
+      "image": "https://i.ibb.co.com/PXBqgGD/Shiva-Temple-Puthia-Rajshahi-NK-1.jpg",
+      "type": "Heritage",
+      "duration": "3 Night 4 Day",
+      "date": "8.6.24",
+      "price": 800
+    },
+    {
+      "id": 15,
+      "title": "Lalbagh Fort",
+      "image": "https://i.ibb.co.com/NgnB1pVJ/48530509381-c7eb7d3d24-b.jpg",
+      "type": "History",
+      "duration": "2 Night 3 Day",
+      "date": "20.7.24",
+      "price": 720
+    },
+    {
+      "id": 16,
+      "title": "Kaptai Lake",
+      "image": "https://i.ibb.co.com/ycM4sJn3/panoramic-beauty-of-kaptai.jpg",
+      "type": "Relax",
+      "duration": "2 Night 3 Day",
+      "date": "5.8.24",
+      "price": 750
+    },
+    {
+      "id": 17,
+      "title": "Bhola Island",
+      "image": "https://i.ibb.co.com/Wp5BtDPw/17131609124463.jpg",
+      "type": "Secluded",
+      "duration": "4 Night 5 Day",
+      "date": "15.9.24",
+      "price": 900
+    },
+    {
+      "id": 18,
+      "title": "Dinajpur",
+      "image": "https://i.ibb.co.com/Df0JHhz5/kantajew-temple-kantajew.jpg",
+      "type": "Heritage",
+      "duration": "3 Night 4 Day",
+      "date": "30.10.24",
+      "price": 780
+    },
+    {
+      "id": 19,
+      "title": "Foy's Lake",
+      "image": "https://i.ibb.co.com/Kz0cfZbs/Best-water-park-in-Bangladesh-1.webp",
+      "type": "Recreation",
+      "duration": "2 Night 3 Day",
+      "date": "12.11.24",
+      "price": 820
+    },
+    {
+      "id": 20,
+      "title": "Madhabkunda Waterfall",
+      "image": "https://i.ibb.co.com/PSQGvz4/8917399.webp",
+      "type": "Adventure",
+      "duration": "3 Night 4 Day",
+      "date": "25.12.24",
+      "price": 860
+    }
+  ]
+  
