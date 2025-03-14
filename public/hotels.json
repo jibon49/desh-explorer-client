@@ -1,0 +1,24 @@
+[
+    {
+      "location": "Maldives",
+      "hotels": [
+        { "name": "Sea Paradise", "price": 120, "image": "/images/hotel1.jpg" },
+        { "name": "Ocean Breeze", "price": 150, "image": "/images/hotel2.jpg" }
+      ]
+    },
+    {
+      "location": "Bali",
+      "hotels": [
+        { "name": "Bali Haven", "price": 90, "image": "/images/hotel3.jpg" },
+        { "name": "Tropical Bliss", "price": 110, "image": "/images/hotel4.jpg" }
+      ]
+    },
+    {
+      "location": "Thailand",
+      "hotels": [
+        { "name": "Thai Retreat", "price": 100, "image": "https://i.ibb.co.com/bg8QP0vQ/thaihotel.jpg" },
+        { "name": "Siam Elegance", "price": 130, "image": "/images/hotel6.jpg" }
+      ]
+    }
+  ]
+  

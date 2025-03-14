@@ -1,0 +1,24 @@
+{
+    "locations": ["Maldives", "Bali", "Thailand", "Paris", "Dubai"],
+    "services": [
+      { "id": 1, "name": "Bus" },
+      { "id": 2, "name": "Plane" },
+      { "id": 3, "name": "Train" }
+    ],
+    "classes": [
+      { "id": 4, "name": "Business" },
+      { "id": 5, "name": "First Class" },
+      { "id": 6, "name": "Economy" }
+    ],
+    "providers": [
+      { "id": 7, "name": "Abtravels" },
+      { "id": 8, "name": "BC Travel" },
+      { "id": 9, "name": "Ed Travels" }
+    ],
+    "rentalCars": [
+      { "id": 1, "name": "Car", "seats": "4 seats", "price": 850 },
+      { "id": 2, "name": "Micro Bus", "seats": "15 seats", "price": 1200 },
+      { "id": 3, "name": "Mini Bus", "seats": "25 seats", "price": 1800 }
+    ]
+  }
+  

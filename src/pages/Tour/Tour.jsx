@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import tourPackages from "../../../public/tourPackages.json";
 import Banner from "../Home/Banner/Banner";
-import { Helmet } from "react-helmet-async";
 import backImage from "../../assets/tourbg.jpg";
 
 const Tour = () => {
@@ -18,9 +17,7 @@ const Tour = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Desh | Tour</title>
-      </Helmet>
+      
       <Banner
       bgImage={backImage}
       heading="Tour packages"

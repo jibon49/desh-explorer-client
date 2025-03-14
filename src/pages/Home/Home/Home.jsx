@@ -5,16 +5,12 @@ import Tours from "../Tours/Tours";
 import Discover from "../Discover/Discover";
 import ReadBefore from "../ReadBefore/ReadBefore";
 import Review from "../Review/Review";
-import { Helmet } from "react-helmet-async";
 import backImage from "../../../assets/banner.jpeg";
 
 export class Home extends PureComponent {
   render() {
     return (
       <div>
-        <Helmet>
-          <title>Desh | Home</title>
-        </Helmet>
         <Banner
 
         bgImage={backImage}
