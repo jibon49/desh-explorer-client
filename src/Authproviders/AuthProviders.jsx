@@ -2,7 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import PropTypes from 'prop-types';
 import { app } from "../Firebase/firebase.config";
-// import useAxiosPublic from "../Hooks/AxiosPublic/useAxiosPublic";
+import useAxiosPublic from "../hooks/useAxiosPublic";
 
 export const AuthContext = createContext(null)
 
@@ -12,7 +12,7 @@ const AuthProviders = ({ children }) => {
 
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
-    // const axiosPublic = useAxiosPublic();
+    const axiosPublic = useAxiosPublic();
 
     useEffect(() => {
         const unSubscribe = onAuthStateChanged(auth, (currentUser) => {

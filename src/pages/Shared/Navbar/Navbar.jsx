@@ -1,67 +1,63 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { NavLink } from "react-router-dom";
+import { FaBell } from "react-icons/fa";
+import { MdLogout, MdSpaceDashboard } from "react-icons/md";
+import { useQuery } from "@tanstack/react-query";
+import userImg from "/user.png";
+import { AuthContext } from "../../../Authproviders/Authproviders";
+import useAxiosPublic from "../../../hooks/useAxiosPublic";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, logOut } = useContext(AuthContext);
+  const axiosPublic = useAxiosPublic();
+
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      if (window.scrollY > 50) setIsScrolled(true);
+      else setIsScrolled(false);
     };
-
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const menu = <>
-  <li>
-              <NavLink to="/" className="font-bold hover:text-site-main">
-                Home
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/tour" className="font-bold hover:text-site-main">
-                Tour
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/custom-tour" className="font-bold hover:text-site-main">
-                Custom Tour
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/" className="font-bold hover:text-site-main">
-                Group Tour
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/" className="font-bold hover:text-site-main">
-                Blogs & Review
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/" className="font-bold hover:text-site-main">
-                Complain
-              </NavLink>
-            </li>
-  </>
+  const handleLogout = () => {
+    logOut();
+    localStorage.removeItem("isDataSent");
+  };
+
+  const menu = (
+    <>
+      <li>
+        <NavLink to="/" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Home</NavLink>
+      </li>
+      <li>
+        <NavLink to="/tour" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Tour</NavLink>
+      </li>
+      <li>
+        <NavLink to="/custom-tour" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Custom Tour</NavLink>
+      </li>
+      <li>
+        <NavLink to="/group-tour" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Group Tour</NavLink>
+      </li>
+      <li>
+        <NavLink to="/blogs" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Blogs & Review</NavLink>
+      </li>
+      <li>
+        <NavLink to="/complain" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Complain</NavLink>
+      </li>
+    </>
+  );
 
   return (
     <div
       className={`navbar px-5 w-full fixed top-0 left-0 z-20 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/80 text-black backdrop-blur-md shadow-md"
-          : "bg-transparent text-white"
+        isScrolled ? "bg-white/80 text-black backdrop-blur-md shadow-md" : "bg-transparent text-white"
       }`}
     >
-      {/* Left Section - Logo & Mobile Menu */}
-      <div className="navbar-start text-black">
+      {/* Left Section */}
+      <div className="navbar-start">
         <div className="dropdown relative">
           <label tabIndex={0} className="btn btn-ghost lg:hidden">
             <svg
@@ -81,14 +77,12 @@ const Navbar = () => {
           </label>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content absolute left-0 mt-3 z-50 p-2 bg-white shadow-lg w-52 rounded-md"
+            className="menu menu-sm dropdown-content absolute left-0 mt-3 z-50 p-2 bg-white text-black shadow-lg w-52 rounded-md"
           >
             {menu}
           </ul>
         </div>
-
         <div className="flex items-center gap-4">
-          {/* <img className="h-12" alt="Logo" /> */}
           <a className="normal-case font-extrabold text-2xl text-site-main">
             Desh Explorer
           </a>
@@ -97,19 +91,42 @@ const Navbar = () => {
 
       {/* Center Navigation Links */}
       <div className="navbar-center hidden lg:flex">
-        <ul className="flex gap-5 px-1">
-          {menu}
-        </ul>
+        <ul className="flex gap-5 px-1 items-center">{menu}</ul>
       </div>
 
-      {/* Right Section - Login Button */}
+      {/* Right Section */}
       <div className="navbar-end">
-        <NavLink
-          to="/login"
-          className="hover:bg-site-main bg-site-main bg-base-200 px-6 py-2 rounded-xl font-semibold"
-        >
-          Login
-        </NavLink>
+        {user ? (
+          <div className="flex items-center gap-4">
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                {
+                  user ? <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                  <img src={user.photoURL || userImg} />
+                </div> :
+                <img src={userImg} />
+                }
+              </label>
+              <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                <li className="text-center mb-2">{user.displayName}</li>
+                <li>
+                  <NavLink to='/dashboard'>Dashboard <MdSpaceDashboard /></NavLink>
+                </li>
+                <li>
+                  <button onClick={handleLogout} className="btn btn-ghost w-full font-semibold">Logout <MdLogout /></button>
+                </li>
+              </ul>
+            </div>
+            <button onClick={handleLogout} className="hover:text-site-main font-semibold">Logout</button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <img src={userImg} alt="user avatar" className="w-10 h-10 rounded-full" />
+            <NavLink to="/login" className="hover:text-site-main font-semibold">
+              Login
+            </NavLink>
+          </div>
+        )}
       </div>
     </div>
   );

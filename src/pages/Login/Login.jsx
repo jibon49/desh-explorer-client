@@ -33,32 +33,28 @@ const Login = () => {
 
     const from = location.state?.from?.pathname || '/';
     const handleLogin = data => {
-
-        const email = data.email
-        const password = data.password
-
+        const email = data.email;
+        const password = data.password;
+      
         logIn(email, password)
-            .then(result => {
-                console.log(result)
-                Swal.fire({
-                    title: 'Success',
-                    text: 'Login Success',
-                    icon: 'success',
-                    confirmButtonText: 'Cool'
-                })
-                navigate(location?.state ? location.state : '/')
-
-
-
-            })
-            .catch(error => {
-                console.error(error)
-                if (error.message === 'Firebase: Error (auth/invalid-login-credentials).') {
-                    toast.error('Invalid Email or Password')
-                }
-
-            })
-    }
+          .then(() => {
+            Swal.fire({
+              title: 'Success',
+              text: 'Login Success',
+              icon: 'success',
+              confirmButtonText: 'Cool'
+            }).then(() => {
+              navigate(from, { replace: true });
+            });
+          })
+          .catch(error => {
+            console.error(error);
+            if (error.message === 'Firebase: Error (auth/invalid-login-credentials).') {
+              toast.error('Invalid Email or Password');
+            }
+          });
+      };
+      
 
     const handleGoogleSignIn = () => {
         const provider = new GoogleAuthProvider();
@@ -103,7 +99,7 @@ const Login = () => {
     return (
         <div>
             <div className="className=mt-20 max-w-6xl mx-auto">
-                <div className="hero-content flex-col lg:flex-row-reverse mb-20">
+                <div className="hero-content flex-col lg:flex-row-reverse md:flex-row-reverse mb-20">
                     <div className="card flex-shrink-0 w-full max-w-lg shadow-2xl bg-base-100">
                         <form onSubmit={handleSubmit(handleLogin)} className="card-body text-[#403F3F]">
                             <div className="form-control">
