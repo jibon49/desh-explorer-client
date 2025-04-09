@@ -6,6 +6,7 @@ import Main from "../layout/Main";
 import Home from "../pages/Home/Home/Home";
 import Tour from "../pages/Tour/Tour";
 import CustomTour from "../pages/CustomTour/CustomTour";
+import Login from "../pages/Login/Login";
 
   export const router = createBrowserRouter([
     {
@@ -23,6 +24,10 @@ import CustomTour from "../pages/CustomTour/CustomTour";
         {
           path:'/custom-tour',
           element:<CustomTour></CustomTour>
+        },
+        {
+          path:'/login',
+          element:<Login></Login>
         }
       ]
     },
