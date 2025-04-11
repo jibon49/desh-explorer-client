@@ -1,8 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { NavLink } from "react-router-dom";
-import { FaBell } from "react-icons/fa";
 import { MdLogout, MdSpaceDashboard } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
 import userImg from "/user.png";
 import { AuthContext } from "../../../Authproviders/Authproviders";
 import useAxiosPublic from "../../../hooks/useAxiosPublic";
@@ -97,7 +95,7 @@ const Navbar = () => {
       {/* Right Section */}
       <div className="navbar-end">
         {user ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-black">
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
                 {
@@ -110,7 +108,7 @@ const Navbar = () => {
               <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                 <li className="text-center mb-2">{user.displayName}</li>
                 <li>
-                  <NavLink to='/dashboard'>Dashboard <MdSpaceDashboard /></NavLink>
+                  <NavLink to='/userDashboard'>Dashboard <MdSpaceDashboard /></NavLink>
                 </li>
                 <li>
                   <button onClick={handleLogout} className="btn btn-ghost w-full font-semibold">Logout <MdLogout /></button>

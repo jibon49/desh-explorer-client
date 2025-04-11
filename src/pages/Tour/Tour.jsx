@@ -25,6 +25,39 @@ const Tour = () => {
     navigate(`/tourDetails/${id}`);
   };
 
+  if (!tourPackages.length)
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {[...Array(8)].map((_, index) => (
+          <div key={index} className="card bg-base-100 shadow-xl animate-pulse">
+            <figure className="px-4 pt-4">
+              <div className="skeleton h-48 w-full rounded-xl"></div>
+            </figure>
+            <div className="card-body p-4">
+              <div className="skeleton h-6 w-3/4 mb-2"></div>
+              <div className="skeleton h-4 w-1/2 mb-4"></div>
+              
+              <div className="flex justify-between items-center mb-3">
+                <div className="skeleton h-4 w-16"></div>
+                <div className="skeleton h-4 w-16"></div>
+              </div>
+              
+              <div className="skeleton h-4 w-full mb-2"></div>
+              <div className="skeleton h-4 w-5/6 mb-2"></div>
+              <div className="skeleton h-4 w-2/3 mb-4"></div>
+              
+              <div className="flex justify-between items-center">
+                <div className="skeleton h-10 w-24 rounded-full"></div>
+                <div className="skeleton h-10 w-24 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    );
+
   return (
     <>
       <Banner

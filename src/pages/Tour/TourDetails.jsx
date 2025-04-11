@@ -14,8 +14,36 @@ const TourDetails = () => {
       .catch((err) => console.error(err));
   }, [id]);
 
-  console.log(tour)
-  if (!tour) return <p className="text-center mt-20">Loading...</p>;
+  console.log(tour);
+  if (!tour)
+    return (
+        <div className="flex w-full flex-col gap-4 items-center justify-center mx-auto my-16">
+       
+        <div className="skeleton h-64 w-full"></div>
+    
+       
+        <div className="skeleton h-10 w-3/4"></div>
+    
+       
+        <div className="flex flex-col w-3/4 gap-4">
+            <div className="skeleton h-6 w-full"></div>
+            <div className="skeleton h-6 w-full"></div>
+            <div className="skeleton h-6 w-full"></div>
+            <div className="skeleton h-6 w-full"></div>
+            <div className="skeleton h-6 w-full"></div>
+            <div className="skeleton h-6 w-full"></div>
+        </div>
+    
+        
+        <div className="flex flex-col w-3/4 gap-4">
+            <div className="skeleton h-10 w-1/2"></div>
+            <div className="skeleton h-10 w-1/2"></div>
+            <div className="skeleton h-10 w-1/2"></div>
+            <div className="skeleton h-10 w-1/2"></div>
+            <div className="skeleton h-10 w-1/4"></div>
+        </div>
+    </div>
+    );
 
   return (
     <>
