@@ -10,6 +10,7 @@ import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import TourDetails from "../pages/Tour/TourDetails";
 import UserDashboard from "../pages/userDashboard/userDashboard";
+import GroupTour from "../pages/GroupTour/GroupTour";
 
   export const router = createBrowserRouter([
     {
@@ -43,6 +44,10 @@ import UserDashboard from "../pages/userDashboard/userDashboard";
         {
           path:'/userDashboard',
           element:<UserDashboard></UserDashboard>
+        },
+        {
+          path:'/group-tour',
+          element:<GroupTour></GroupTour>
         }
       ]
     },

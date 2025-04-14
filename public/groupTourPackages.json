@@ -1,0 +1,346 @@
+[
+    {
+      "id": 1,
+      "title": "Sundarbans Adventure | 3-Day Tour",
+      "from": "Khulna",
+      "to": "Sundarbans",
+      "organizer": "Md. Zahirul Alam Bhuiyan",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Embark on a thrilling 3-day journey through the Sundarbans, exploring the world's largest mangrove forest.",
+      "itinerary": [
+        "Departure from Khulna",
+        "Visit to Harbaria Eco-Tourism Center",
+        "Cruise through the forest canals",
+        "Spotting wildlife at Kotka",
+        "Return to Khulna"
+      ],
+      "price": 5000,
+      "rating": 5,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Sylhet Tea Garden Tour | 2-Day Package",
+      "from": "Dhaka",
+      "to": "Sylhet",
+      "organizer": "Mohammed Farhad Gani",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Experience the lush green tea gardens of Sylhet and immerse yourself in the local culture.",
+      "itinerary": [
+        "Travel from Dhaka to Sylhet",
+        "Visit to Malnichhera Tea Estate",
+        "Explore Ratargul Swamp Forest",
+        "Overnight stay in Sylhet",
+        "Return to Dhaka"
+      ],
+      "price": 4000,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Cox's Bazar Beach Retreat | Weekend Getaway",
+      "from": "Chittagong",
+      "to": "Cox's Bazar",
+      "organizer": "Mohammed Mahmudul Hoque",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Relax on the sandy beaches of Cox's Bazar and enjoy the serene beauty of the sea.",
+      "itinerary": [
+        "Departure from Chittagong",
+        "Check-in at beach resort",
+        "Visit to Himchari Waterfall",
+        "Evening at Laboni Beach",
+        "Return to Chittagong"
+      ],
+      "price": 4500,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Rangamati Hill Tracts Exploration | 3-Day Tour",
+      "from": "Dhaka",
+      "to": "Rangamati",
+      "organizer": "Md. Mohosin Iqbal",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Discover the scenic beauty of Rangamati's hills, lakes, and indigenous culture.",
+      "itinerary": [
+        "Travel from Dhaka to Rangamati",
+        "Boat ride on Kaptai Lake",
+        "Visit to Chakma Rajbari",
+        "Explore Shuvolong Waterfall",
+        "Return to Dhaka"
+      ],
+      "price": 5500,
+      "rating": 5,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Cox's Bazar | Full day package",
+      "from": "Dhaka",
+      "to": "Cox's Bazar",
+      "organizer": "Osama Bin Laden",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "সকালে নাস্তা খেয়ে রওনা হব ইনানী বিচ...",
+      "itinerary": [
+        "সকালের নাস্তা",
+        "ইনানী বিচ",
+        "হিমছড়ি",
+        "মেরিন ড্রাইভ",
+        "দুপুরের খাবার"
+      ],
+      "price": 3500,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Bandarban Adventure | 2-Day Trek",
+      "from": "Chittagong",
+      "to": "Bandarban",
+      "organizer": "Md. Jafor Ahamed",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Trek through the hills of Bandarban and experience the natural beauty and tribal culture.",
+      "itinerary": [
+        "Travel from Chittagong to Bandarban",
+        "Hike to Nilgiri Hills",
+        "Visit to Boga Lake",
+        "Overnight camping",
+        "Return to Chittagong"
+      ],
+      "price": 4800,
+      "rating": 5,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Srimangal Nature Tour | 2-Day Escape",
+      "from": "Dhaka",
+      "to": "Srimangal",
+      "organizer": "Shahidul Islam Chowdhury",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Explore the tea gardens, Lawachara National Park, and enjoy the tranquility of Srimangal.",
+      "itinerary": [
+        "Departure from Dhaka",
+        "Visit to Lawachara National Park",
+        "Explore tea gardens",
+        "Stay at eco-resort",
+        "Return to Dhaka"
+      ],
+      "price": 4200,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Sundarbans Wildlife Safari | 4-Day Tour",
+      "from": "Khulna",
+      "to": "Sundarbans",
+      "organizer": "Md. Zahirul Alam Bhuiyan",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "A comprehensive wildlife safari in the Sundarbans, including boat rides and wildlife spotting.",
+      "itinerary": [
+        "Departure from Khulna",
+        "Visit to Karamjal Eco-Tourism Center",
+        "Wildlife spotting at Kotka and Kachikhali",
+        "Return to Khulna"
+      ],
+      "price": 7000,
+      "rating": 5,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Chittagong Hill Tracts Tour | 3-Day Experience",
+      "from": "Dhaka",
+      "to": "Bandarban",
+      "organizer": "Mohammed Farhad Gani",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "Explore the unique culture and stunning landscapes of the Chittagong Hill Tracts.",
+      "itinerary": [
+        "Travel from Dhaka to Bandarban",
+        "Visit to Ruma and Ruma Bazar",
+        "Explore indigenous villages",
+        "Return to Dhaka"
+      ],
+      "price": 6000,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Sreemangal Tea Garden Tour | Day Trip",
+      "from": "Dhaka",
+      "to": "Sreemangal",
+      "organizer": "Md. Mohosin Iqbal",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "A day trip to Sreemangal, exploring tea gardens and enjoying local cuisine.",
+      "itinerary": [
+        "Departure from Dhaka",
+        "Visit to tea gardens",
+        "Lunch at a local restaurant",
+        "Return to Dhaka"
+      ],
+      "price": 3000,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Cox's Bazar | Full day package",
+      "from": "Dhaka",
+      "to": "Cox's Bazar",
+      "organizer": "Osama Bin Laden",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "সকালে নাস্তা খেয়ে রওনা হব ইনানী বিচ...",
+      "itinerary": [
+        "সকালের নাস্তা",
+        "ইনানী বিচ",
+        "হিমছড়ি",
+        "মেরিন ড্রাইভ",
+        "দুপুরের খাবার"
+      ],
+      "price": 3500,
+      "rating": 4,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Bandarban Hill Trekking | 3-Day Adventure",
+      "from": "Chittagong",
+      "to": "Bandarban",
+      "organizer": "Md. Jafor Ahamed",
+      "profileImage": "https://placehold.co/100x100",
+      "images": [
+        "https://placehold.co/100x100",
+        "https://placehold.co/100x100"
+      ],
+      "details": "A thrilling trekking experience in Bandarban, exploring hills and waterfalls.",
+      "itinerary": [
+        "Travel from Chittagong to Bandarban",
+        "Trek to Nilgiri and Boga Lake",
+        "Visit to indigenous villages",
+        "Return to Chittagong"
+      ],
+      "price": 6000,
+      "rating": 5,
+      "rules": [
+        "All participants must carry valid ID.",
+        "Travel insurance is recommended.",
+        "Respect local customs and traditions.",
+        "Follow the itinerary for a smooth experience.",
+        "Cancellation policy applies."
+      ]
+    } 
+  ]
