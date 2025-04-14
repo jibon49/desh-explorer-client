@@ -1,32 +1,36 @@
 import { useState } from 'react';
-import { FaPlus, FaMapMarkerAlt, FaCamera, FaPaperPlane } from 'react-icons/fa';
 
 const GroupTravelPostForm = () => {
   const [postText, setPostText] = useState('');
-  const [fields, setFields] = useState([{ activity: '', label: 'Value' }]);
-  const [location, setLocation] = useState('');
+  const [itinerary, setItinerary] = useState(['']);
+  const [rules, setRules] = useState(['']);
+  const [title, setTitle] = useState('');
+  const [fromLocation, setFromLocation] = useState('');
+  const [toLocation, setToLocation] = useState('');
+  const [organizer, setOrganizer] = useState('');
+  const [price, setPrice] = useState('');
+  const [mapLink, setMapLink] = useState('');
   const [photo, setPhoto] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const handlePhotoUpload = (e) => {
-    if (e.target.files[0]) {
-      setPhoto(e.target.files[0]);
-    }
+    setPhoto(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitSuccess(false);
 
     const formData = new FormData();
-    formData.append('postText', postText);
-    fields.forEach((field, index) => {
-      formData.append(`activity_${index}`, field.activity);
-      formData.append(`label_${index}`, field.label);
-    });
-    formData.append('location', location);
+    formData.append('title', title);
+    formData.append('from', fromLocation);
+    formData.append('to', toLocation);
+    formData.append('organizer', organizer);
+    formData.append('details', postText);
+    formData.append('price', price);
+    formData.append('mapLink', mapLink);
+
+    itinerary.forEach((step, index) => formData.append(`itinerary_${index}`, step));
+    rules.forEach((rule, index) => formData.append(`rule_${index}`, rule));
+
     if (photo) formData.append('photo', photo);
 
     try {
@@ -36,199 +40,276 @@ const GroupTravelPostForm = () => {
       });
 
       if (res.ok) {
-        setSubmitSuccess(true);
+        alert('Post submitted successfully!');
+        setTitle('');
+        setFromLocation('');
+        setToLocation('');
+        setOrganizer('');
         setPostText('');
-        setFields([{ activity: '', label: 'Value' }]);
-        setLocation('');
+        setPrice('');
+        setMapLink('');
+        setItinerary(['']);
+        setRules(['']);
         setPhoto(null);
-        setTimeout(() => setSubmitSuccess(false), 3000);
       } else {
         throw new Error('Failed to post');
       }
     } catch (error) {
       console.error(error);
       alert('An error occurred while submitting the post.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const addField = () => {
-    setFields([...fields, { activity: '', label: 'Value' }]);
+  const updateList = (index, value, type) => {
+    const updated = type === 'itinerary' ? [...itinerary] : [...rules];
+    updated[index] = value;
+    type === 'itinerary' ? setItinerary(updated) : setRules(updated);
   };
 
-  const removeField = (index) => {
-    if (fields.length > 1) {
-      const updated = [...fields];
-      updated.splice(index, 1);
-      setFields(updated);
+  const addListItem = (type) => {
+    type === 'itinerary' ? setItinerary([...itinerary, '']) : setRules([...rules, '']);
+  };
+
+  const removeListItem = (index, type) => {
+    if (type === 'itinerary' && itinerary.length > 1) {
+      setItinerary(itinerary.filter((_, i) => i !== index));
+    } else if (type === 'rules' && rules.length > 1) {
+      setRules(rules.filter((_, i) => i !== index));
     }
-  };
-
-  const updateField = (index, key, value) => {
-    const updated = [...fields];
-    updated[index][key] = value;
-    setFields(updated);
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Form Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Create Group Travel Post</h1>
-            <p className="text-blue-100 mt-2">Invite others to join your adventure!</p>
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+            <h1 className="text-3xl font-bold">Create Group Tour Post</h1>
+            <p className="opacity-90 mt-1">Share your travel plans with others</p>
           </div>
-
-          {/* Success Message */}
-          {submitSuccess && (
-            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4">
-              <p>Post submitted successfully!</p>
-            </div>
-          )}
-
-          {/* Form Content */}
-          <div className="p-6 sm:p-8">
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Post Content */}
-                <div className="lg:col-span-2">
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-3 flex items-center">
-                      <FaPaperPlane className="mr-2 text-blue-500" />
-                      Your Travel Story
-                    </label>
-                    <textarea
-                      className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      placeholder="Share your travel plans, experiences, and why others should join you..."
-                      value={postText}
-                      onChange={(e) => setPostText(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Activities Sidebar */}
-                <div className="lg:col-span-1">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-700 mb-4">Trip Activities</h3>
-                    
-                    {fields.map((field, index) => (
-                      <div key={index} className="mb-4 relative group">
-                        <input
-                          type="text"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                          placeholder="Activity (e.g., Beach visit)"
-                          value={field.activity}
-                          onChange={(e) => updateField(index, 'activity', e.target.value)}
-                          required
-                        />
-                        {fields.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeField(index)}
-                            className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={addField}
-                      className="w-full mt-2 p-2 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-100 transition"
-                    >
-                      <FaPlus className="mr-2" />
-                      Add Activity
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Photo Upload */}
-              <div className="mt-6">
-                <label className="block text-gray-700 font-semibold mb-3 flex items-center">
-                  <FaCamera className="mr-2 text-blue-500" />
-                  Upload Photo
-                </label>
-                <div className="flex items-center">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      {photo ? (
-                        <>
-                          <span className="text-sm text-gray-500">{photo.name}</span>
-                          <span className="text-xs text-gray-500">Click to change</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                          </svg>
-                          <p className="text-sm text-gray-500">
-                            <span className="font-semibold">Click to upload</span> or drag and drop
-                          </p>
-                          <p className="text-xs text-gray-500">PNG, JPG (MAX. 5MB)</p>
-                        </>
-                      )}
-                    </div>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handlePhotoUpload} 
-                      className="hidden" 
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="mt-6">
-                <label className="block text-gray-700 font-semibold mb-3 flex items-center">
-                  <FaMapMarkerAlt className="mr-2 text-blue-500" />
-                  Location
+          
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Title*</span>
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  placeholder="Enter location or Google Maps URL"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  className="input input-bordered w-full focus:ring-2 focus:ring-blue-500"
+                  placeholder="Amazing Mountain Trek"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   required
                 />
               </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Organizer</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Your name or company"
+                  value={organizer}
+                  onChange={(e) => setOrganizer(e.target.value)}
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">From*</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Starting location"
+                  value={fromLocation}
+                  onChange={(e) => setFromLocation(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">To*</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Destination"
+                  value={toLocation}
+                  onChange={(e) => setToLocation(e.target.value)}
+                  required
+                />
+              </div>
+              
+             
+              
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Price*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    className="input input-bordered w-full pl-8"
+                    placeholder="0.00"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Map Link*</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="https://maps.google.com/..."
+                  value={mapLink}
+                  onChange={(e) => setMapLink(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Submit Button */}
-              <div className="mt-8 flex justify-end">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Tour Details*</span>
+              </label>
+              <textarea
+                className="textarea textarea-bordered h-32"
+                placeholder="Describe your tour in detail..."
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <h3 className="font-bold text-lg mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  </svg>
+                  Itinerary
+                </h3>
+                {itinerary.map((step, idx) => (
+                  <div key={idx} className="flex items-center mb-2">
+                    <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">{idx + 1}</span>
+                    <input
+                      type="text"
+                      className="input input-bordered flex-1"
+                      value={step}
+                      onChange={(e) => updateList(idx, e.target.value, 'itinerary')}
+                      placeholder={`Itinerary step ${idx + 1}`}
+                    />
+                    {itinerary.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeListItem(idx, 'itinerary')}
+                        className="btn btn-ghost btn-sm ml-2 text-red-500"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`px-6 py-3 rounded-lg font-medium text-white shadow-md transition flex items-center ${
-                    isSubmitting 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
-                  }`}
+                  type="button"
+                  onClick={() => addListItem('itinerary')}
+                  className="btn btn-ghost btn-sm mt-2 text-blue-600"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Posting...
-                    </>
-                  ) : (
-                    <>
-                      <FaPaperPlane className="mr-2" />
-                      Post Adventure
-                    </>
-                  )}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  Add Step
                 </button>
               </div>
-            </form>
-          </div>
+
+              <div className="border rounded-lg p-4">
+                <h3 className="font-bold text-lg mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Rules & Requirements
+                </h3>
+                {rules.map((rule, idx) => (
+                  <div key={idx} className="flex items-center mb-2">
+                    <span className="bg-red-100 text-red-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">{idx + 1}</span>
+                    <input
+                      type="text"
+                      className="input input-bordered flex-1"
+                      value={rule}
+                      onChange={(e) => updateList(idx, e.target.value, 'rules')}
+                      placeholder={`Rule ${idx + 1}`}
+                    />
+                    {rules.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeListItem(idx, 'rules')}
+                        className="btn btn-ghost btn-sm ml-2 text-red-500"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addListItem('rules')}
+                  className="btn btn-ghost btn-sm mt-2 text-red-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  Add Rule
+                </button>
+              </div>
+            </div>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Cover Photo</span>
+              </label>
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="file-input file-input-bordered w-full"
+                  />
+                </div>
+                {photo && (
+                  <div className="avatar">
+                    <div className="w-12 rounded">
+                      <img src={URL.createObjectURL(photo)} alt="Preview" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button
+                type="submit"
+                className="btn btn-primary px-8"
+              >
+                Create Tour Post
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
