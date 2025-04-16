@@ -2,10 +2,13 @@ import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../../Authproviders/AuthProviders";
 import useMongoUser from "../../hooks/userMongoUser";
+import DatePicker from "react-datepicker";
+import { FiCalendar } from "react-icons/fi";
+import "react-datepicker/dist/react-datepicker.css";
 
 const GroupTravelPostForm = () => {
   const { user } = useContext(AuthContext);
-  const {mongoUser} = useMongoUser(); // Assuming you have a custom hook to fetch MongoDB user data
+  const { mongoUser } = useMongoUser(); // Assuming you have a custom hook to fetch MongoDB user data
 
   const [postText, setPostText] = useState("");
   const [itinerary, setItinerary] = useState([""]);
@@ -18,7 +21,8 @@ const GroupTravelPostForm = () => {
   const [mapLink, setMapLink] = useState("");
   const [photo, setPhoto] = useState(null);
   const [slots, setSlots] = useState(""); // Added slots state
-
+  const [departureDate, setDepartureDate] = useState(null);
+  const [returnDate, setReturnDate] = useState(null);
 
   const handlePhotoUpload = (e) => {
     setPhoto(e.target.files[0]);
@@ -62,6 +66,8 @@ const GroupTravelPostForm = () => {
       details: postText,
       price: parseFloat(price),
       map: mapLink,
+      departureDate,
+      returnDate,
       itinerary,
       rules,
       profileImage: imageUrl,
@@ -122,6 +128,12 @@ const GroupTravelPostForm = () => {
     } else if (type === "rules" && rules.length > 1) {
       setRules(rules.filter((_, i) => i !== index));
     }
+  };
+
+  const calculateDuration = (start, end) => {
+    if (!start || !end) return 0;
+    const diffTime = Math.abs(end - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   console.log(mongoUser);
@@ -221,6 +233,64 @@ const GroupTravelPostForm = () => {
                   onChange={(e) => setMapLink(e.target.value)}
                   required
                 />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Departure Date */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold flex items-center">
+                      <FiCalendar className="mr-2 text-blue-500" />
+                      Departure Date*
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <DatePicker
+                      selected={departureDate}
+                      onChange={(date) => setDepartureDate(date)}
+                      selectsStart
+                      startDate={departureDate}
+                      endDate={returnDate}
+                      className="input input-bordered w-full pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholderText="Select departure date"
+                      minDate={new Date()}
+                      required
+                      dateFormat="MMMM d, yyyy"
+                    />
+                    <FiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                  </div>
+                </div>
+
+                {/* Return Date */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold flex items-center">
+                      <FiCalendar className="mr-2 text-blue-500" />
+                      Return Date*
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <DatePicker
+                      selected={returnDate}
+                      onChange={(date) => setReturnDate(date)}
+                      selectsEnd
+                      startDate={departureDate}
+                      endDate={returnDate}
+                      minDate={departureDate || new Date()}
+                      className="input input-bordered w-full pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholderText="Select return date"
+                      required
+                      dateFormat="MMMM d, yyyy"
+                      disabled={!departureDate}
+                    />
+                    <FiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                  </div>
+                  {departureDate && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Duration: {calculateDuration(departureDate, returnDate)}{" "}
+                      days
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

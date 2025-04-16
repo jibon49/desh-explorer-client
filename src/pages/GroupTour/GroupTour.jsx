@@ -65,6 +65,35 @@ const GroupTour = () => {
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   console.log(mongoUser);
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const handleBookTour = async () => {
+    try {
+      const res = await axios.patch(`http://localhost:5000/group-tours/${selectedTour._id}/book`, {
+        slots: parseInt(person),
+      });
+  
+      if (res.data.modifiedCount > 0) {
+        alert("Booking confirmed!");
+        setSelectedTour({
+          ...selectedTour,
+          availableSlots: selectedTour.availableSlots - person,
+        });
+      }
+    } catch (err) {
+      alert("Booking failed.");
+      console.error(err);
+    }
+  };
+  
+
   return (
     <>
       <Banner
@@ -154,10 +183,17 @@ const GroupTour = () => {
                     <h2 className="text-xl font-bold text-gray-800 line-clamp-1">
                       {tour.title}
                     </h2>
-                    <p className="text-gray-600 flex items-center mt-1">
-                      <FaMapMarkerAlt className="mr-1 text-sm text-blue-500" />
-                      {tour.from} → {tour.to}
+                    <p className="text-sm text-gray-500 mt-1 flex items-center">
+                      <FaCalendarAlt className="mr-2 text-purple-500" />
+                      {formatDate(tour.departureDate)} →{" "}
+                      {formatDate(tour.returnDate)}
                     </p>
+
+                    {new Date(tour.departureDate) < new Date() && (
+                      <p className="text-xs text-red-600 mt-1 font-semibold">
+                        Departure date has passed
+                      </p>
+                    )}
                   </div>
                   <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
                     ৳ {tour.price}
@@ -365,20 +401,15 @@ const GroupTour = () => {
                           </p>
                         </div>
                       </li>
-                      <li className="flex items-start p-3 bg-purple-50 rounded-lg">
-                        <FaCalendarAlt className="text-purple-500 mt-1 mr-3 flex-shrink-0" />
-                        <div>
-                          <h5 className="font-semibold text-gray-800">
-                            Availability
-                          </h5>
-                          <p className="text-gray-600">
-                            {selectedTour.date || "Flexible dates available"}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {selectedTour.availableSlots} slots remaining
-                          </p>
-                        </div>
-                      </li>
+                      <p className="text-gray-600">
+                        {formatDate(selectedTour.departureDate)} →{" "}
+                        {formatDate(selectedTour.returnDate)}
+                      </p>
+                      {new Date(selectedTour.departureDate) < new Date() && (
+                        <p className="text-sm text-red-600 font-semibold mt-1">
+                          This tour has already departed
+                        </p>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -445,7 +476,17 @@ const GroupTour = () => {
                     <div className="text-2xl font-bold text-blue-600">
                       ৳ {selectedTour.price * person}
                     </div>
-                    <button className="btn btn-primary px-8">Book Now</button>
+                    <button
+                      className="btn btn-primary px-8"
+                      onClick={handleBookTour}
+                      disabled={
+                        new Date(selectedTour.departureDate) < new Date()
+                      }
+                    >
+                      {new Date(selectedTour.departureDate) < new Date()
+                        ? "Date Passed"
+                        : "Book Now"}
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-6 p-3 bg-blue-50 rounded-lg border border-blue-100">
