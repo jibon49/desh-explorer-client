@@ -5,8 +5,11 @@ import PersonalDetails from "../../Components/PersonalDetails/PersonalDetails";
 import TravelPreferenceForm from "../../Components/TravelPreferenceForm/TravelPreferenceForm";
 import GroupTravelPostForm from "../../Components/GroupTravelPostForm/GroupTravelPostForm";
 import AdminPanel from "../../Components/AdminPanel/AdminPanel";
+import useRole from "../../hooks/useRole";
 
 const userDashboard = () => {
+  const { role } = useRole();
+  console.log(role)
   return (
     <>
       <Banner
@@ -54,6 +57,7 @@ const userDashboard = () => {
             aria-label="Admin pannel"
           />
           <div className="tab-content bg-base-100 border-base-300 p-6">
+            {/* {role === "admin" && <AdminPanel />} */}
             <AdminPanel></AdminPanel>
           </div>
         </div>
