@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AuthContext } from "../Authproviders/Authproviders";
+import { AuthContext } from "../Authproviders/AuthProviders";
 
 const useRole = () => {
   const { role, loading } = useContext(AuthContext);

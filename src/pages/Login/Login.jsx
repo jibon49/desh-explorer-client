@@ -1,18 +1,19 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaGoogle } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
 import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { app } from '../../Firebase/firebase.config';
-import { AuthContext } from '../../Authproviders/Authproviders';
 import useAxiosPublic from '../../hooks/useAxiosPublic';
 import { useForm } from 'react-hook-form';
+import { AuthContext } from '../../Authproviders/AuthProviders';
 
 const auth = getAuth(app);
 
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const axiosPublic = useAxiosPublic();
   const {
     register,
@@ -108,22 +109,32 @@ const Login = () => {
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700">Password</label>
-              <div className="relative">
-                <input
-                  type="password"
-                  {...register('password', { required: true })}
-                  placeholder="Enter your password"
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <i className="fas fa-eye absolute right-3 top-3 text-gray-500"></i>
-              </div>
-              {errors.password && (
-                <span className="text-red-500 text-sm">
-                  Password is required
-                </span>
-              )}
-            </div>
+  <label className="block text-gray-700">Password</label>
+  <div className="relative">
+    <input
+      type={showPassword ? "text" : "password"}
+      {...register('password', { required: true })}
+      placeholder="Enter your password"
+      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+    />
+    <button
+      type="button"
+      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? (
+        <FaEyeSlash className="h-5 w-5" />
+      ) : (
+        <FaEye className="h-5 w-5" />
+      )}
+    </button>
+  </div>
+  {errors.password && (
+    <span className="text-red-500 text-sm">
+      Password is required
+    </span>
+  )}
+</div>
             <div className="flex items-center justify-between mb-6">
               <label className="flex items-center">
                 <input

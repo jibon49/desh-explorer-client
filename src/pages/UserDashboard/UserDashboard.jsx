@@ -6,10 +6,12 @@ import TravelPreferenceForm from "../../Components/TravelPreferenceForm/TravelPr
 import GroupTravelPostForm from "../../Components/GroupTravelPostForm/GroupTravelPostForm";
 import AdminPanel from "../../Components/AdminPanel/AdminPanel";
 import useRole from "../../hooks/useRole";
+import HostPanel from "../../Components/hostPanel/hostPanel";
+import UserPanel from "../../Components/userPanel/userPanel";
 
 const userDashboard = () => {
   const { role } = useRole();
-  console.log(role)
+  console.log(role);
   return (
     <>
       <Banner
@@ -41,24 +43,35 @@ const userDashboard = () => {
             <TravelPreferenceForm></TravelPreferenceForm>
           </div>
 
+          {role !== "member" && (
+            <>
+              <input
+                type="radio"
+                name="my_tabs_6"
+                className="tab"
+                aria-label="Group Travel Post"
+              />
+              <div className="tab-content bg-base-100 border-base-300 p-6">
+                <GroupTravelPostForm></GroupTravelPostForm>
+              </div>
+            </>
+          )}
           <input
             type="radio"
             name="my_tabs_6"
             className="tab"
-            aria-label="Group Travel Post"
+            aria-label={
+              role === "admin"
+                ? "Admin Panel"
+                : role === "host"
+                ? "Host Panel"
+                : "User Panel"
+            }
           />
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            <GroupTravelPostForm></GroupTravelPostForm>
-          </div>
-          <input
-            type="radio"
-            name="my_tabs_6"
-            className="tab"
-            aria-label="Admin pannel"
-          />
-          <div className="tab-content bg-base-100 border-base-300 p-6">
-            {/* {role === "admin" && <AdminPanel />} */}
-            <AdminPanel></AdminPanel>
+            {role === "admin" && <AdminPanel />}
+            {role === "host" && <HostPanel></HostPanel>}
+            {role === "member" && <UserPanel></UserPanel>}
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ import Register from "../pages/Register/Register";
 import TourDetails from "../pages/Tour/TourDetails";
 import UserDashboard from "../pages/userDashboard/userDashboard";
 import GroupTour from "../pages/GroupTour/GroupTour";
+import ComplainForm from "../pages/ComplainForm/ComplainForm";
 
   export const router = createBrowserRouter([
     {
@@ -48,6 +49,10 @@ import GroupTour from "../pages/GroupTour/GroupTour";
         {
           path:'/group-tour',
           element:<GroupTour></GroupTour>
+        },
+        {
+          path:'complain-form',
+          element:<ComplainForm></ComplainForm>
         }
       ]
     },

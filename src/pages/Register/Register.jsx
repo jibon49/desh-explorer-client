@@ -1,17 +1,22 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { updateProfile } from "firebase/auth";
-import { AuthContext } from "../../Authproviders/Authproviders";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
+import { AuthContext } from "../../Authproviders/AuthProviders";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY;
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
+
 const Register = () => {
+  const [showPassword,setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -146,14 +151,22 @@ const Register = () => {
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <input
                 {...register("password", { required: true })}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="w-full p-3 border rounded-lg"
+                className="w-full p-3 border rounded-lg pr-10" 
               />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
+
             <div className="mb-4">
               <input
                 {...register("photoUrl")}

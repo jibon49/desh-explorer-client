@@ -10,6 +10,7 @@ import {
 import PropTypes from "prop-types";
 import { app } from "../Firebase/firebase.config";
 import useAxiosPublic from "../hooks/useAxiosPublic";
+import useAxiosSecure from "../hooks/useAxiosSecure"; // <-- import your secure axios
 
 export const AuthContext = createContext(null);
 const auth = getAuth(app);
@@ -19,8 +20,8 @@ const AuthProviders = ({ children }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure(); 
 
-  // Observe user state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -28,20 +29,19 @@ const AuthProviders = ({ children }) => {
 
       const userEmail = currentUser?.email;
       if (currentUser && userEmail) {
-        // Get JWT token
-        axiosPublic.post("/jwt", { email: userEmail }).then((res) => {
-          if (res.data.token) {
-            localStorage.setItem("access-token", res.data.token);
-          }
-        });
-
-        // Get user role from DB
         try {
-          const res = await axiosPublic.get(`/users?email=${userEmail}`);
-          const matchedUser = res.data.find(u => u.userMail === userEmail);
+          
+          const jwtRes = await axiosPublic.post("/jwt", { email: userEmail });
+          if (jwtRes.data.token) {
+            localStorage.setItem("access-token", jwtRes.data.token);
+          }
+
+          const userRes = await axiosSecure.get(`/users?email=${userEmail}`);
+          const matchedUser = userRes.data.find((u) => u.userMail === userEmail);
           setRole(matchedUser?.userRole || "user");
         } catch (error) {
-          console.error("Failed to fetch user role:", error);
+          console.error("Error getting user role or token:", error);
+          setRole(null);
         }
       } else {
         setRole(null);
@@ -50,9 +50,8 @@ const AuthProviders = ({ children }) => {
     });
 
     return () => unsubscribe();
-  }, [axiosPublic]);
+  }, [axiosPublic, axiosSecure]);
 
-  // Auth functions
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
@@ -61,7 +60,7 @@ const AuthProviders = ({ children }) => {
   const updateProfile = (name, photoUrl) => {
     return firebaseUpdateProfile(auth.currentUser, {
       displayName: name,
-      photoURL: photoUrl
+      photoURL: photoUrl,
     });
   };
 
@@ -100,7 +99,7 @@ const AuthProviders = ({ children }) => {
 };
 
 AuthProviders.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 export default AuthProviders;
