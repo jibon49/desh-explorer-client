@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { AuthContext } from "../../Authproviders/Authproviders";
 import {
   FaEdit,
   FaSave,
@@ -14,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { AuthContext } from "../../Authproviders/AuthProviders";
 const PersonalDetails = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -135,7 +135,6 @@ const PersonalDetails = () => {
         </div>
       </div>
     );
-  console.log(userInfo);
 
   return (
     <div className="font-roboto bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen">

@@ -1,16 +1,24 @@
-import { useState } from 'react';
+import React, { useState, useContext, useEffect } from "react";
+import axios from "axios";
+import { AuthContext } from "../../Authproviders/AuthProviders";
+import useMongoUser from "../../hooks/userMongoUser";
 
 const GroupTravelPostForm = () => {
-  const [postText, setPostText] = useState('');
-  const [itinerary, setItinerary] = useState(['']);
-  const [rules, setRules] = useState(['']);
-  const [title, setTitle] = useState('');
-  const [fromLocation, setFromLocation] = useState('');
-  const [toLocation, setToLocation] = useState('');
-  const [organizer, setOrganizer] = useState('');
-  const [price, setPrice] = useState('');
-  const [mapLink, setMapLink] = useState('');
+  const { user } = useContext(AuthContext);
+  const {mongoUser} = useMongoUser(); // Assuming you have a custom hook to fetch MongoDB user data
+
+  const [postText, setPostText] = useState("");
+  const [itinerary, setItinerary] = useState([""]);
+  const [rules, setRules] = useState([""]);
+  const [title, setTitle] = useState("");
+  const [fromLocation, setFromLocation] = useState("");
+  const [toLocation, setToLocation] = useState("");
+  const [organizer, setOrganizer] = useState("");
+  const [price, setPrice] = useState("");
+  const [mapLink, setMapLink] = useState("");
   const [photo, setPhoto] = useState(null);
+  const [slots, setSlots] = useState(""); // Added slots state
+
 
   const handlePhotoUpload = (e) => {
     setPhoto(e.target.files[0]);
@@ -19,64 +27,104 @@ const GroupTravelPostForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('from', fromLocation);
-    formData.append('to', toLocation);
-    formData.append('organizer', organizer);
-    formData.append('details', postText);
-    formData.append('price', price);
-    formData.append('mapLink', mapLink);
+    let imageUrl = "";
 
-    itinerary.forEach((step, index) => formData.append(`itinerary_${index}`, step));
-    rules.forEach((rule, index) => formData.append(`rule_${index}`, rule));
+    if (photo) {
+      const formData = new FormData();
+      formData.append("image", photo);
 
-    if (photo) formData.append('photo', photo);
+      try {
+        const imgRes = await axios.post(
+          `https://api.imgbb.com/1/upload?key=${
+            import.meta.env.VITE_IMAGE_HOSTING_KEY
+          }`,
+          formData
+        );
+
+        if (imgRes.data.success) {
+          imageUrl = imgRes.data.data.display_url;
+        } else {
+          alert("Failed to upload image");
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Image upload failed.");
+        return;
+      }
+    }
+
+    const newTour = {
+      title,
+      from: fromLocation,
+      to: toLocation,
+      organizer,
+      details: postText,
+      price: parseFloat(price),
+      map: mapLink,
+      itinerary,
+      rules,
+      profileImage: imageUrl,
+      availableSlots: parseInt(slots) || 10, // Default to 10 if not provided
+      rating: 5,
+      images: [imageUrl],
+      createdBy: {
+        name: mongoUser?.userName || "",
+        email: mongoUser?.userMail || "",
+        photo: mongoUser?.userPhoto || "",
+        phone: mongoUser?.userPhone || "N/A",
+      },
+    };
 
     try {
-      const res = await fetch('/api/group-post', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (res.ok) {
-        alert('Post submitted successfully!');
-        setTitle('');
-        setFromLocation('');
-        setToLocation('');
-        setOrganizer('');
-        setPostText('');
-        setPrice('');
-        setMapLink('');
-        setItinerary(['']);
-        setRules(['']);
+      const response = await axios.post(
+        "http://localhost:5000/group-tours",
+        newTour
+      );
+      if (response.data.insertedId) {
+        alert("Tour post created successfully!");
+        // Reset all form fields
+        setTitle("");
+        setFromLocation("");
+        setToLocation("");
+        setOrganizer("");
+        setPostText("");
+        setPrice("");
+        setMapLink("");
+        setItinerary([""]);
+        setRules([""]);
         setPhoto(null);
+        setSlots(""); // Reset slots to default value
       } else {
-        throw new Error('Failed to post');
+        throw new Error("Post failed");
       }
-    } catch (error) {
-      console.error(error);
-      alert('An error occurred while submitting the post.');
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting post.");
     }
   };
 
   const updateList = (index, value, type) => {
-    const updated = type === 'itinerary' ? [...itinerary] : [...rules];
+    const updated = type === "itinerary" ? [...itinerary] : [...rules];
     updated[index] = value;
-    type === 'itinerary' ? setItinerary(updated) : setRules(updated);
+    type === "itinerary" ? setItinerary(updated) : setRules(updated);
   };
 
   const addListItem = (type) => {
-    type === 'itinerary' ? setItinerary([...itinerary, '']) : setRules([...rules, '']);
+    type === "itinerary"
+      ? setItinerary([...itinerary, ""])
+      : setRules([...rules, ""]);
   };
 
   const removeListItem = (index, type) => {
-    if (type === 'itinerary' && itinerary.length > 1) {
+    if (type === "itinerary" && itinerary.length > 1) {
       setItinerary(itinerary.filter((_, i) => i !== index));
-    } else if (type === 'rules' && rules.length > 1) {
+    } else if (type === "rules" && rules.length > 1) {
       setRules(rules.filter((_, i) => i !== index));
     }
   };
+
+  console.log(mongoUser);
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8 px-4">
@@ -84,9 +132,11 @@ const GroupTravelPostForm = () => {
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
             <h1 className="text-3xl font-bold">Create Group Tour Post</h1>
-            <p className="opacity-90 mt-1">Share your travel plans with others</p>
+            <p className="opacity-90 mt-1">
+              Share your travel plans with others
+            </p>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="form-control">
@@ -127,7 +177,7 @@ const GroupTravelPostForm = () => {
                   required
                 />
               </div>
-              
+
               <div className="form-control">
                 <label className="label">
                   <span className="label-text font-semibold">To*</span>
@@ -141,9 +191,7 @@ const GroupTravelPostForm = () => {
                   required
                 />
               </div>
-              
-             
-              
+
               <div className="form-control">
                 <label className="label">
                   <span className="label-text font-semibold">Price*</span>
@@ -160,7 +208,7 @@ const GroupTravelPostForm = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="form-control">
                 <label className="label">
                   <span className="label-text font-semibold">Map Link*</span>
@@ -188,33 +236,71 @@ const GroupTravelPostForm = () => {
                 required
               />
             </div>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Available Slots*
+                </span>
+              </label>
+              <input
+                type="number"
+                className="input input-bordered w-full"
+                placeholder="10"
+                value={slots}
+                onChange={(e) => setSlots(e.target.value)}
+                required
+                min="1"
+              />
+            </div>
 
             <div className="space-y-4">
               <div className="border rounded-lg p-4">
                 <h3 className="font-bold text-lg mb-3 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2 text-blue-600"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Itinerary
                 </h3>
                 {itinerary.map((step, idx) => (
                   <div key={idx} className="flex items-center mb-2">
-                    <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">{idx + 1}</span>
+                    <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
+                      {idx + 1}
+                    </span>
                     <input
                       type="text"
                       className="input input-bordered flex-1"
                       value={step}
-                      onChange={(e) => updateList(idx, e.target.value, 'itinerary')}
+                      onChange={(e) =>
+                        updateList(idx, e.target.value, "itinerary")
+                      }
                       placeholder={`Itinerary step ${idx + 1}`}
                     />
                     {itinerary.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeListItem(idx, 'itinerary')}
+                        onClick={() => removeListItem(idx, "itinerary")}
                         className="btn btn-ghost btn-sm ml-2 text-red-500"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     )}
@@ -222,11 +308,20 @@ const GroupTravelPostForm = () => {
                 ))}
                 <button
                   type="button"
-                  onClick={() => addListItem('itinerary')}
+                  onClick={() => addListItem("itinerary")}
                   className="btn btn-ghost btn-sm mt-2 text-blue-600"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Add Step
                 </button>
@@ -234,29 +329,49 @@ const GroupTravelPostForm = () => {
 
               <div className="border rounded-lg p-4">
                 <h3 className="font-bold text-lg mb-3 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2 text-red-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Rules & Requirements
                 </h3>
                 {rules.map((rule, idx) => (
                   <div key={idx} className="flex items-center mb-2">
-                    <span className="bg-red-100 text-red-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">{idx + 1}</span>
+                    <span className="bg-red-100 text-red-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
+                      {idx + 1}
+                    </span>
                     <input
                       type="text"
                       className="input input-bordered flex-1"
                       value={rule}
-                      onChange={(e) => updateList(idx, e.target.value, 'rules')}
+                      onChange={(e) => updateList(idx, e.target.value, "rules")}
                       placeholder={`Rule ${idx + 1}`}
                     />
                     {rules.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeListItem(idx, 'rules')}
+                        onClick={() => removeListItem(idx, "rules")}
                         className="btn btn-ghost btn-sm ml-2 text-red-500"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     )}
@@ -264,11 +379,20 @@ const GroupTravelPostForm = () => {
                 ))}
                 <button
                   type="button"
-                  onClick={() => addListItem('rules')}
+                  onClick={() => addListItem("rules")}
                   className="btn btn-ghost btn-sm mt-2 text-red-600"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Add Rule
                 </button>
@@ -299,13 +423,19 @@ const GroupTravelPostForm = () => {
             </div>
 
             <div className="flex justify-end pt-4">
-              <button
-                type="submit"
-                className="btn btn-primary px-8"
-              >
+              <button type="submit" className="btn btn-primary px-8">
                 Create Tour Post
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 ml-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             </div>

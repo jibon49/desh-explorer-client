@@ -1,19 +1,40 @@
-import React, { useState } from "react";
-import tourPackages from "../../../public/groupTourPackages.json";
+import React, { useEffect, useState } from "react";
 import Banner from "../Home/Banner/Banner";
 import backImage from "../../assets/tourbg.jpg";
 import { FormControl, MenuItem, Select } from "@mui/material";
-import { FaStar, FaMapMarkerAlt, FaUserAlt, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
+import {
+  FiMail,
+  FiPhone,
+  FiMessageSquare,
+  FiImage,
+  FiZap,
+  FiAlertTriangle,
+} from "react-icons/fi";
+
+import {
+  FaStar,
+  FaMapMarkerAlt,
+  FaUserAlt,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaUserAltSlash,
+} from "react-icons/fa";
+import axios from "axios";
+import useMongoUser from "../../hooks/userMongoUser";
 
 const GroupTour = () => {
   const [fromLocation, setFromLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTour, setSelectedTour] = useState(null);
+  const [tourPackages, setTourPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { mongoUser, load, error } = useMongoUser();
+  const [person, setPerson] = useState(1);
 
   const itemsPerPage = 3;
-  const locations = Array.from(new Set(tourPackages.map(tour => tour.from)));
+  const locations = Array.from(new Set(tourPackages.map((tour) => tour.from)));
   const filteredPackages = fromLocation
-    ? tourPackages.filter(tour => tour.from === fromLocation)
+    ? tourPackages.filter((tour) => tour.from === fromLocation)
     : tourPackages;
 
   const handleLocationChange = (e) => {
@@ -23,7 +44,26 @@ const GroupTour = () => {
 
   const totalPages = Math.ceil(filteredPackages.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredPackages.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = filteredPackages.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/group-tours")
+      .then((res) => {
+        setTourPackages(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch group tours:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  console.log(mongoUser);
 
   return (
     <>
@@ -35,9 +75,12 @@ const GroupTour = () => {
 
       <div className="my-16 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="font-bold text-4xl text-gray-800 mb-2">Group Tour Packages</h1>
+          <h1 className="font-bold text-4xl text-gray-800 mb-2">
+            Group Tour Packages
+          </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover amazing group adventures with expert guides and unforgettable experiences
+            Discover amazing group adventures with expert guides and
+            unforgettable experiences
           </p>
         </div>
 
@@ -70,7 +113,11 @@ const GroupTour = () => {
                   <em className="text-gray-500">All Locations</em>
                 </MenuItem>
                 {locations.map((location, index) => (
-                  <MenuItem key={index} value={location} className="hover:bg-blue-50">
+                  <MenuItem
+                    key={index}
+                    value={location}
+                    className="hover:bg-blue-50"
+                  >
                     {location}
                   </MenuItem>
                 ))}
@@ -82,7 +129,10 @@ const GroupTour = () => {
         {/* Cards */}
         <div className="grid grid-cols-1 gap-8">
           {paginatedData.map((tour, idx) => (
-            <div key={idx} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
+            <div
+              key={idx}
+              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+            >
               <div className="relative">
                 <img
                   src={tour.profileImage}
@@ -92,14 +142,18 @@ const GroupTour = () => {
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
                   <div className="flex items-center text-yellow-500">
                     <FaStar className="mr-1" />
-                    <span className="font-semibold text-gray-800">{tour.rating}</span>
+                    <span className="font-semibold text-gray-800">
+                      {tour.rating}
+                    </span>
                   </div>
                 </div>
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800 line-clamp-1">{tour.title}</h2>
+                    <h2 className="text-xl font-bold text-gray-800 line-clamp-1">
+                      {tour.title}
+                    </h2>
                     <p className="text-gray-600 flex items-center mt-1">
                       <FaMapMarkerAlt className="mr-1 text-sm text-blue-500" />
                       {tour.from} → {tour.to}
@@ -109,7 +163,7 @@ const GroupTour = () => {
                     ৳ {tour.price}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between mt-6">
                   <div className="flex items-center text-sm text-gray-500">
                     <FaUserAlt className="mr-1" />
@@ -132,7 +186,7 @@ const GroupTour = () => {
           <div className="flex justify-center mt-12">
             <div className="join">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="join-item btn btn-outline"
               >
@@ -142,13 +196,17 @@ const GroupTour = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`join-item btn ${currentPage === i + 1 ? "btn-active" : ""}`}
+                  className={`join-item btn ${
+                    currentPage === i + 1 ? "btn-active" : ""
+                  }`}
                 >
                   {i + 1}
                 </button>
               ))}
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
                 className="join-item btn btn-outline"
               >
@@ -161,7 +219,13 @@ const GroupTour = () => {
 
       {/* Modal */}
       {selectedTour && (
-        <input type="checkbox" id="quote-modal" className="modal-toggle" checked readOnly />
+        <input
+          type="checkbox"
+          id="quote-modal"
+          className="modal-toggle"
+          checked
+          readOnly
+        />
       )}
       <div className={`modal ${selectedTour ? "modal-open" : ""}`}>
         <div className="modal-box relative w-full max-w-5xl overflow-y-auto max-h-[90vh] p-0">
@@ -172,64 +236,165 @@ const GroupTour = () => {
           >
             ✕
           </label>
-          
+
           {selectedTour && (
             <div className="flex flex-col lg:flex-row">
               {/* Left Column - Images */}
-              <div className="lg:w-2/5 bg-gray-100 p-6">
-                <div className="sticky top-0 space-y-6">
-                  <div className="text-center">
-                    <img 
-                      src={selectedTour.profileImage} 
-                      className="rounded-full w-32 h-32 object-cover mx-auto border-4 border-white shadow-md" 
-                      alt="profile" 
-                    />
-                    <h3 className="text-xl font-bold mt-4">{selectedTour.organizer}</h3>
-                    <div className="flex justify-center mt-2 text-yellow-500">
+              <div className="lg:w-2/5 bg-gradient-to-b from-gray-50 to-gray-100 p-6 rounded-xl shadow-inner">
+                <div className="sticky top-6 space-y-8">
+                  {/* Organizer Profile */}
+                  <div className="text-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="relative mx-auto w-32 h-32">
+                      <img
+                        src={
+                          selectedTour.createdBy.photo ||
+                          "https://via.placeholder.com/150"
+                        }
+                        className="rounded-full w-full h-full object-cover border-4 border-white shadow-lg"
+                        alt="Organizer"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/150";
+                        }}
+                      />
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
+                        Organizer
+                      </div>
+                    </div>
+
+                    <h3 className="text-xl font-bold mt-6 text-gray-800">
+                      {selectedTour.createdBy.name}
+                    </h3>
+
+                    <div className="flex justify-center mt-2 space-x-1">
                       {Array.from({ length: 5 }, (_, i) => (
-                        <FaStar key={i} className={i < selectedTour.rating ? "" : "text-gray-300"} />
+                        <FaStar
+                          key={i}
+                          className={`text-${
+                            i < selectedTour.rating ? "yellow-400" : "gray-300"
+                          } text-lg`}
+                        />
+                      ))}
+                      <span className="text-gray-500 ml-1 text-sm">
+                        ({selectedTour.rating})
+                      </span>
+                    </div>
+
+                    {/* Organizer Contact Info */}
+                    <div className="mt-4 space-y-2 text-left bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center text-gray-700">
+                        <FiMail className="text-blue-500 mr-2" />
+                        <span className="truncate">
+                          {selectedTour.createdBy.email}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-gray-700">
+                        <FiPhone className="text-blue-500 mr-2" />
+                        <span>
+                          {selectedTour.createdBy.phone || "Not provided"}
+                        </span>
+                      </div>
+                      <button className="mt-3 w-full bg-blue-100 hover:bg-blue-200 text-blue-600 py-2 rounded-lg font-medium transition-colors flex items-center justify-center">
+                        <FiMessageSquare className="mr-2" />
+                        Contact Organizer
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tour Gallery */}
+                  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <h4 className="font-bold text-lg mb-4 text-gray-800 flex items-center">
+                      <FiImage className="text-blue-500 mr-2" />
+                      Tour Gallery
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedTour.images?.slice(0, 4).map((img, idx) => (
+                        <div
+                          key={idx}
+                          className="relative group overflow-hidden rounded-lg aspect-square"
+                        >
+                          <img
+                            src={img}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            alt={`Tour preview ${idx + 1}`}
+                          />
+                          {idx === 3 && selectedTour.images.length > 4 && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white font-bold">
+                              +{selectedTour.images.length - 4} more
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mt-6">
-                    {selectedTour.images?.map((img, idx) => (
-                      <img 
-                        key={idx} 
-                        src={img} 
-                        className="w-full h-32 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer" 
-                        alt={`img-${idx}`} 
-                      />
-                    ))}
+                  <div className="w-full h-64 rounded overflow-hidden">
+                    <iframe
+                      title="Google Map"
+                      width="100%"
+                      height="100%"
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.google.com/maps?q=${encodeURIComponent(
+                        selectedTour.map
+                      )}&output=embed`}
+                    ></iframe>
                   </div>
-                  
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-bold text-lg mb-3">Tour Highlights</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <FaMapMarkerAlt className="text-blue-500 mr-2" />
-                        <span>{selectedTour.from} → {selectedTour.to}</span>
+
+                  {/* Tour Highlights */}
+                  <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <h4 className="font-bold text-lg mb-4 text-gray-800 flex items-center">
+                      <FiZap className="text-blue-500 mr-2" />
+                      Tour Highlights
+                    </h4>
+                    <ul className="space-y-3">
+                      <li className="flex items-start p-3 bg-blue-50 rounded-lg">
+                        <FaMapMarkerAlt className="text-blue-500 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h5 className="font-semibold text-gray-800">Route</h5>
+                          <p className="text-gray-600">
+                            {selectedTour.from} → {selectedTour.to}
+                          </p>
+                        </div>
                       </li>
-                      <li className="flex items-center">
-                        <FaMoneyBillWave className="text-green-500 mr-2" />
-                        <span>Starting from ৳ {selectedTour.price}</span>
+                      <li className="flex items-start p-3 bg-green-50 rounded-lg">
+                        <FaMoneyBillWave className="text-green-500 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h5 className="font-semibold text-gray-800">Price</h5>
+                          <p className="text-gray-600">
+                            Starts from ৳{selectedTour.price.toLocaleString()}
+                          </p>
+                        </div>
                       </li>
-                      <li className="flex items-center">
-                        <FaCalendarAlt className="text-purple-500 mr-2" />
-                        <span>Flexible dates available</span>
+                      <li className="flex items-start p-3 bg-purple-50 rounded-lg">
+                        <FaCalendarAlt className="text-purple-500 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h5 className="font-semibold text-gray-800">
+                            Availability
+                          </h5>
+                          <p className="text-gray-600">
+                            {selectedTour.date || "Flexible dates available"}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {selectedTour.availableSlots} slots remaining
+                          </p>
+                        </div>
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
-              
+
               {/* Right Column - Details */}
               <div className="lg:w-3/5 p-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedTour.title}</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  {selectedTour.title}
+                </h2>
                 <p className="text-gray-600 mb-6">{selectedTour.details}</p>
-                
+
                 <div className="mb-8">
-                  <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">Itinerary</h3>
+                  <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
+                    Itinerary
+                  </h3>
                   <div className="space-y-4">
                     {selectedTour.itinerary?.map((item, idx) => (
                       <div key={idx} className="flex">
@@ -248,9 +413,11 @@ const GroupTour = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="mb-8">
-                  <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">Rules & Requirements</h3>
+                  <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
+                    Rules & Requirements
+                  </h3>
                   <ul className="space-y-2">
                     {selectedTour.rules?.map((rule, idx) => (
                       <li key={idx} className="flex items-start">
@@ -260,26 +427,46 @@ const GroupTour = () => {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-xl font-semibold mb-4">Book This Tour</h3>
                   <div className="flex flex-wrap items-center gap-6">
                     <div className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm">
                       <label className="mr-3 font-medium">Persons</label>
-                      <input 
-                        type="number" 
-                        defaultValue={2} 
-                        min="1" 
-                        className="input input-bordered w-20 text-center" 
+                      <input
+                        type="number"
+                        defaultValue={1}
+                        min="1"
+                        onChange={(e) => setPerson(e.target.value)}
+                        max={selectedTour.availableSlots}
+                        className="input input-bordered w-20 text-center"
                       />
                     </div>
                     <div className="text-2xl font-bold text-blue-600">
-                      ৳ {selectedTour.price}
+                      ৳ {selectedTour.price * person}
                     </div>
-                    <button className="btn btn-primary px-8">
-                      Book Now
-                    </button>
+                    <button className="btn btn-primary px-8">Book Now</button>
                   </div>
+                </div>
+                <div className="flex items-center justify-between mt-6 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="flex items-center text-sm">
+                    <div className="bg-blue-100 p-2 rounded-full mr-3">
+                      <FaUserAltSlash className="text-blue-600" />
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Available Slots:</span>
+                      <span className="ml-2 font-semibold text-blue-700">
+                        {selectedTour.availableSlots}
+                      </span>
+                    </div>
+                  </div>
+
+                  {selectedTour.availableSlots < 5 && (
+                    <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center">
+                      <FiAlertTriangle className="mr-1" />
+                      Selling Fast!
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
