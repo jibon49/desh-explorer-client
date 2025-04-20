@@ -1,0 +1,36 @@
+
+[
+    {
+        "id": 1,
+        "user": "Emily R.",
+        "avatar": "https://randomuser.me/api/portraits/women/65.jpg",
+        "package": "Paris Explorer",
+        "rating": 5,
+        "text": "Absolutely loved the Eiffel Tower tour and cuisine!"
+    },
+    {
+        "id": 2,
+        "user": "John D.",
+        "avatar": "https://randomuser.me/api/portraits/men/44.jpg",
+        "package": "Tokyo Discovery",
+        "rating": 4,
+        "text": "Amazing culture and food! I’ll be back."
+    },
+    {
+        "id": 3,
+        "user": "Ava M.",
+        "avatar": "https://randomuser.me/api/portraits/women/32.jpg",
+        "package": "Bali Retreat",
+        "rating": 5,
+        "text": "The beaches and spiritual vibe were unforgettable!"
+    },
+    {
+        "id": 4,
+        "user": "Michael T.",
+        "avatar": "https://randomuser.me/api/portraits/men/22.jpg",
+        "package": "Swiss Alps Adventure",
+        "rating": 4,
+        "text": "Great skiing experience and cozy mountain lodges!"
+    }
+
+] 

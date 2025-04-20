@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "title": "Sunset Paradise in Saint Martin",
+        "location": "Saint Martin, Bangladesh",
+        "date": "15 May 2023",
+        "rating": 5,
+        "image": "https://images.unsplash.com/photo-1566438480900-0609be27a4be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2098&q=80",
+        "content": "The crystal clear waters and pristine beaches of Saint Martin took my breath away. Waking up to the sound of waves and enjoying fresh seafood by the shore was an unforgettable experience."
+    },
+    {
+        "id": 2,
+        "title": "Exploring the Sundarbans",
+        "location": "Sundarbans, Bangladesh",
+        "date": "22 June 2023",
+        "rating": 4.5,
+        "image": "https://images.unsplash.com/photo-1566438480900-0609be27a4be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2098&q=80",
+        "content": "The Sundarbans is a UNESCO World Heritage site and home to the majestic Bengal tiger. The mangrove forests and diverse wildlife made this trip an adventure of a lifetime."
+    },
+    {
+        "id": 3,
+        "title": "Cultural Richness of Dhaka",
+        "location": "Dhaka, Bangladesh",
+        "date": "10 July 2023",
+        "rating": 4,
+        "image": "https://images.unsplash.com/photo-1566438480900-0609be27a4be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2098&q=80",
+        "content": "Dhaka is a bustling metropolis with a rich history and vibrant culture. From the historic Lalbagh Fort to the colorful streets of Old Dhaka, every corner tells a story."
+    }
+]

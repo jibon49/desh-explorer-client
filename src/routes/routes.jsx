@@ -12,6 +12,7 @@ import TourDetails from "../pages/Tour/TourDetails";
 import UserDashboard from "../pages/userDashboard/userDashboard";
 import GroupTour from "../pages/GroupTour/GroupTour";
 import ComplainForm from "../pages/ComplainForm/ComplainForm";
+import BlogsReview from "../pages/BlogsReview/BlogsReview";
 
   export const router = createBrowserRouter([
     {
@@ -53,6 +54,10 @@ import ComplainForm from "../pages/ComplainForm/ComplainForm";
         {
           path:'complain-form',
           element:<ComplainForm></ComplainForm>
+        },
+        {
+          path:'blogs-review',
+          element:<BlogsReview></BlogsReview>
         }
       ]
     },

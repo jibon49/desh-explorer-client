@@ -13,13 +13,14 @@ import axios from "axios";
 import useMongoUser from "../../hooks/userMongoUser";
 
 const ComplainForm = () => {
-  const [hostId, setHostId] = useState("");
+  const [tourId, setTourId] = useState("");
   const [complainText, setComplainText] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const {mongoUser} = useMongoUser();
+  const [searching, setSearching] = useState(false);
+  const { mongoUser } = useMongoUser();
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -30,59 +31,82 @@ const ComplainForm = () => {
   };
 
   const handleSearch = async () => {
-    if (!hostId.trim()) {
+    if (!tourId.trim()) {
       alert("Please enter a Tour ID");
       return;
     }
-  
+
+    setSearching(true);
     try {
-      const res = await axios.get(`http://localhost:5000/group-tours/${hostId}`);
-      setSearchResult(res.data);
+      // Search in both collections
+      const [groupTourRes, packageRes] = await Promise.all([
+        axios
+          .get(`http://localhost:5000/group-tours/${tourId}`)
+          .catch(() => ({ data: null })),
+        axios
+          .get(`http://localhost:5000/tourPackages/${tourId}`)
+          .catch(() => ({ data: null })),
+      ]);
+
+      if (groupTourRes?.data) {
+        setSearchResult({
+          ...groupTourRes.data,
+          type: "Group Tour",
+          collection: "group-tours",
+        });
+      } else if (packageRes?.data) {
+        setSearchResult({
+          ...packageRes.data,
+          type: "Tour Package",
+          collection: "tourPackages",
+        });
+      } else {
+        alert("No tour found with that ID");
+        setSearchResult(null);
+      }
     } catch (err) {
       console.error("Tour fetch error:", err);
-      alert("No tour package found with that ID");
+      alert("Error searching for tour. Please check the ID format.");
       setSearchResult(null);
+    } finally {
+      setSearching(false);
     }
   };
-
   const handleSubmit = async () => {
-    if (!hostId || !complainText) {
+    if (!tourId || !complainText) {
       alert("Please fill in all required fields");
       return;
     }
 
     const complaintData = {
-        tourId: hostId,
-        complaint: complainText,
-        fileName: fileName,
-        date: new Date().toISOString(),
-        user: {
-          name: mongoUser?.userName,
-          email: mongoUser?.userMail,
-          photo: mongoUser?.userPhoto
-        }
-      };
-      
+      tourId,
+      tourType: searchResult?.collection || "unknown",
+      complaint: complainText,
+      fileName,
+      date: new Date().toISOString(),
+      user: {
+        name: mongoUser?.userName,
+        email: mongoUser?.userMail,
+        photo: mongoUser?.userPhoto,
+      },
+    };
 
+    setIsSubmitting(true);
     try {
-        const res = await fetch("http://localhost:5000/complain", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(complaintData),
-          });
-
-      if (res.ok) {
+      const res = await axios.post(
+        "http://localhost:5000/complaints",
+        complaintData
+      );
+      if (res.data.success) {
         alert("Complaint submitted successfully!");
         // Reset form
-        setHostId("");
+        setTourId("");
         setComplainText("");
         setFile(null);
         setFileName("");
         setSearchResult(null);
       } else {
-        throw new Error(res.statusText || "Failed to submit complaint");
+        throw new Error(res.data.message || "Failed to submit complaint");
       }
     } catch (err) {
       console.error("Submission error:", err);
@@ -92,7 +116,6 @@ const ComplainForm = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Hero Section */}
@@ -101,6 +124,7 @@ const ComplainForm = () => {
         heading="We are here to help"
         text="Faced any issue while on tour? Let us know and we're here to help"
       />
+
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12 -mt-16 relative z-20 max-w-4xl">
         {/* Search Card */}
@@ -113,7 +137,8 @@ const ComplainForm = () => {
               Find Your Tour Package
             </h2>
             <p className="text-gray-600">
-              Enter your Tour ID to locate your booking
+              Enter your Tour ID to locate your booking (search in both Group
+              Tours and Tour Packages)
             </p>
           </div>
 
@@ -122,10 +147,10 @@ const ComplainForm = () => {
               <div className="relative">
                 <input
                   className="input input-bordered w-full pl-12 focus:ring-2 focus:ring-blue-500"
-                  placeholder="123456"
+                  placeholder="Enter Tour ID"
                   type="text"
-                  value={hostId}
-                  onChange={(e) => setHostId(e.target.value)}
+                  value={tourId}
+                  onChange={(e) => setTourId(e.target.value)}
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                   <FaSearch className="text-lg" />
@@ -135,9 +160,13 @@ const ComplainForm = () => {
             <button
               className="btn btn-primary min-w-[180px]"
               onClick={handleSearch}
-              disabled={!hostId.trim()}
+              disabled={!tourId.trim() || searching}
             >
-              Search Package
+              {searching ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                "Search Tour"
+              )}
             </button>
           </div>
         </div>
@@ -151,9 +180,11 @@ const ComplainForm = () => {
                   <div className="w-24 rounded-full ring ring-green-500 ring-offset-base-100 ring-offset-2">
                     <img
                       src={
-                        searchResult.profileImage || "https://placehold.co/200"
+                        searchResult.profileImage ||
+                        searchResult.image ||
+                        "https://placehold.co/200"
                       }
-                      alt={searchResult.organizer}
+                      alt={searchResult.title}
                     />
                   </div>
                 </div>
@@ -164,9 +195,16 @@ const ComplainForm = () => {
                     <h3 className="text-xl font-bold text-gray-800">
                       {searchResult.title || "Tour Package"}
                     </h3>
-                    <p className="text-blue-600 font-medium">
-                      {searchResult.type}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-blue-600 font-medium">
+                        {searchResult.type}
+                      </p>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        {searchResult.collection === "group-tours"
+                          ? "Group Tour"
+                          : "Tour Package"}
+                      </span>
+                    </div>
                   </div>
                   <div className="badge badge-success gap-1">
                     <BiCheckShield /> Verified
@@ -197,21 +235,45 @@ const ComplainForm = () => {
                       Price:
                     </span>
                     <span className="text-green-600 font-bold">
-                      {searchResult.price || "N/A"}
+                      ${searchResult.price || "N/A"}
                     </span>
                   </div>
 
-                  <div className="flex items-center">
-                    <span className="text-gray-700 font-medium mr-2">
-                      From:
-                    </span>
-                    <span>{searchResult.from || "N/A"}</span>
-                  </div>
+                  {searchResult.from && (
+                    <div className="flex items-center">
+                      <span className="text-gray-700 font-medium mr-2">
+                        From:
+                      </span>
+                      <span>{searchResult.from}</span>
+                    </div>
+                  )}
 
-                  <div className="flex items-center">
-                    <span className="text-gray-700 font-medium mr-2">To:</span>
-                    <span>{searchResult.to || "N/A"}</span>
-                  </div>
+                  {searchResult.to && (
+                    <div className="flex items-center">
+                      <span className="text-gray-700 font-medium mr-2">
+                        To:
+                      </span>
+                      <span>{searchResult.to}</span>
+                    </div>
+                  )}
+
+                  {searchResult.duration && (
+                    <div className="flex items-center">
+                      <span className="text-gray-700 font-medium mr-2">
+                        Duration:
+                      </span>
+                      <span>{searchResult.duration}</span>
+                    </div>
+                  )}
+
+                  {searchResult.location && (
+                    <div className="flex items-center">
+                      <span className="text-gray-700 font-medium mr-2">
+                        Location:
+                      </span>
+                      <span>{searchResult.location}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -219,98 +281,106 @@ const ComplainForm = () => {
         )}
 
         {/* Complaint Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-red-100 ">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <IoIosAlert className="text-red-600 text-3xl" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              File Your Complaint
-            </h2>
-            <p className="text-gray-600">
-              Please describe your issue in detail
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="form-control grid grid-rows-1 gap-4">
-              <label className="label">
-                <span className="label-text font-medium">
-                  Complaint Details
-                </span>
-                <span className="label-text-alt text-red-500">* Required</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered h-48 w-full focus:ring-2 focus:ring-blue-500"
-                placeholder="Describe the issue you encountered during your tour..."
-                value={complainText}
-                onChange={(e) => setComplainText(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">
-                  Supporting Documents
-                </span>
-                <span className="label-text-alt">Optional</span>
-              </label>
-              <div className="flex items-center gap-4">
-                <label className="btn btn-outline border-gray-300 hover:border-gray-400">
-                  <FaPaperclip className="mr-2" />
-                  {fileName ? "Change File" : "Attach File"}
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                  />
-                </label>
-                {fileName && (
-                  <div className="flex-1 flex items-center">
-                    <span className="text-gray-700 truncate max-w-xs">
-                      {fileName}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFile(null);
-                        setFileName("");
-                      }}
-                      className="ml-2 text-gray-500 hover:text-red-500"
-                    >
-                      Ã—
-                    </button>
-                  </div>
-                )}
+        {searchResult && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-red-100">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+                <IoIosAlert className="text-red-600 text-3xl" />
               </div>
-              <label className="label">
-                <span className="label-text-alt text-gray-500">
-                  <FaInfoCircle className="inline mr-1" />
-                  Max 5MB (PDF, JPG, PNG)
-                </span>
-              </label>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                File Your Complaint
+              </h2>
+              <p className="text-gray-600">
+                Please describe your issue with {searchResult.title}
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">
+                    Complaint Details
+                  </span>
+                  <span className="label-text-alt text-red-500">
+                    * Required
+                  </span>
+                </label>
+                <textarea
+                  className="textarea textarea-bordered h-48 w-full focus:ring-2 focus:ring-blue-500"
+                  placeholder="Describe the issue you encountered during your tour..."
+                  value={complainText}
+                  onChange={(e) => setComplainText(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">
+                    Supporting Documents
+                  </span>
+                  <span className="label-text-alt">Optional</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <label className="btn btn-outline border-gray-300 hover:border-gray-400">
+                    <FaPaperclip className="mr-2" />
+                    {fileName ? "Change File" : "Attach File"}
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                  </label>
+                  {fileName && (
+                    <div className="flex-1 flex items-center">
+                      <span className="text-gray-700 truncate max-w-xs">
+                        {fileName}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFile(null);
+                          setFileName("");
+                        }}
+                        className="ml-2 text-gray-500 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <label className="label">
+                  <span className="label-text-alt text-gray-500">
+                    <FaInfoCircle className="inline mr-1" />
+                    Max 5MB (PDF, JPG, PNG)
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Submit Section */}
-        <div className="text-center">
-          <button
-            className={`btn btn-primary px-12 ${isSubmitting ? "loading" : ""}`}
-            onClick={handleSubmit}
-            disabled={!hostId || !complainText || isSubmitting}
-          >
-            {!isSubmitting && <FaPaperPlane className="mr-2" />}
-            {isSubmitting ? "Submitting..." : "Submit Complaint"}
-          </button>
+        {searchResult && (
+          <div className="text-center">
+            <button
+              className={`btn btn-primary px-12 ${
+                isSubmitting ? "loading" : ""
+              }`}
+              onClick={handleSubmit}
+              disabled={!tourId || !complainText || isSubmitting}
+            >
+              {!isSubmitting && <FaPaperPlane className="mr-2" />}
+              {isSubmitting ? "Submitting..." : "Submit Complaint"}
+            </button>
 
-          <div className="mt-6 text-sm text-gray-500">
-            <p>We typically respond to complaints within 24-48 hours</p>
-            <p>Your information will be kept confidential</p>
+            <div className="mt-6 text-sm text-gray-500">
+              <p>We typically respond to complaints within 24-48 hours</p>
+              <p>Your information will be kept confidential</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

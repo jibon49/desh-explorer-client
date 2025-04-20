@@ -140,7 +140,7 @@ const CustomTour = () => {
     setSelectedHotel(null);
   };
 
-  console.log(hotels,mongoUser.userMail)
+  console.log(hotels,mongoUser?.userMail)
 
   return (
     <>
