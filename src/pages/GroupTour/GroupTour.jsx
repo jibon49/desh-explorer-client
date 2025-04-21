@@ -102,7 +102,6 @@ const GroupTour = () => {
       console.error(err);
     }
   };
-
   return (
     <>
       <Banner
