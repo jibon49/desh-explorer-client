@@ -10,6 +10,7 @@ import {
   FiZap,
   FiAlertTriangle,
 } from "react-icons/fi";
+import { HiCheckBadge } from "react-icons/hi2";
 
 import {
   FaStar,
@@ -18,6 +19,7 @@ import {
   FaCalendarAlt,
   FaMoneyBillWave,
   FaUserAltSlash,
+  FaCheckCircle,
 } from "react-icons/fa";
 import axios from "axios";
 import useMongoUser from "../../hooks/userMongoUser";
@@ -62,7 +64,12 @@ const GroupTour = () => {
       });
   }, []);
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading)
+    return (
+      <p className="text-center mt-10">
+        <span class="loading loading-spinner text-info"></span>
+      </p>
+    );
   console.log(mongoUser);
 
   const formatDate = (dateStr) => {
@@ -76,10 +83,13 @@ const GroupTour = () => {
 
   const handleBookTour = async () => {
     try {
-      const res = await axios.patch(`http://localhost:5000/group-tours/${selectedTour._id}/book`, {
-        slots: parseInt(person),
-      });
-  
+      const res = await axios.patch(
+        `http://localhost:5000/group-tours/${selectedTour._id}/book`,
+        {
+          slots: parseInt(person),
+        }
+      );
+
       if (res.data.modifiedCount > 0) {
         alert("Booking confirmed!");
         setSelectedTour({
@@ -92,7 +102,6 @@ const GroupTour = () => {
       console.error(err);
     }
   };
-  
 
   return (
     <>
@@ -293,13 +302,19 @@ const GroupTour = () => {
                         }}
                       />
                       <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-                        Organizer
+                        Organizer{" "}
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-bold mt-6 text-gray-800">
-                      {selectedTour.createdBy.name}
-                    </h3>
+                    <div className="mt-4 flex flex-row gap-2 justify-center items-center text-center">
+                      <h3 className="text-xl font-bold text-gray-800">
+                        {selectedTour.createdBy.name}
+                      </h3>
+                      {selectedTour.role == "admin" ||
+                        ("host" && (
+                          <HiCheckBadge className="text-blue-500 text-lg" />
+                        ))}
+                    </div>
 
                     <div className="flex justify-center mt-2 space-x-1">
                       {Array.from({ length: 5 }, (_, i) => (
@@ -317,7 +332,7 @@ const GroupTour = () => {
 
                     {/* Organizer Contact Info */}
                     <div className="mt-4 space-y-2 text-left bg-blue-50 p-4 rounded-lg">
-                      <div className="flex items-center text-gray-700">
+                      {/* <div className="flex items-center text-gray-700">
                         <FiMail className="text-blue-500 mr-2" />
                         <span className="truncate">
                           {selectedTour.createdBy.email}
@@ -328,7 +343,7 @@ const GroupTour = () => {
                         <span>
                           {selectedTour.createdBy.phone || "Not provided"}
                         </span>
-                      </div>
+                      </div> */}
                       <button className="mt-3 w-full bg-blue-100 hover:bg-blue-200 text-blue-600 py-2 rounded-lg font-medium transition-colors flex items-center justify-center">
                         <FiMessageSquare className="mr-2" />
                         Contact Organizer

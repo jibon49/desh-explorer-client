@@ -96,9 +96,9 @@ const TourDetails = () => {
               <span>👥 From 2 to 6 people</span>
             </div>
             <p className="text-sm text-gray-700">📝 {tour.policy?.refund}</p>
-            <p className="font-semibold mt-2">Requirements</p>
-            <p className="text-sm">Copy of NID card</p>
-            <button className="btn btn-neutral btn-sm mt-4">Book Now</button>
+            {/* <p className="font-semibold mt-2 text-xl">The ID of this tour package is:</p>
+            <p className="text-base text-red-500">{tour._id}</p> */}
+            {/* <button className="btn btn-neutral btn-sm mt-4">Book Now</button> */}
           </div>
         </div>
 

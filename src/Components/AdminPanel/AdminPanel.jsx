@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FiUsers, FiPackage, FiMenu, FiX } from "react-icons/fi";
 import EditTourPackages from "../EditTourPackages/EditTourPackages";
 import ManageUsers from "../ManageUsers/ManageUsers";
+import PostTour from "./PostTour";
 
 const AdminPanel = () => {
   const [selectedOption, setSelectedOption] = useState("manageUsers");
@@ -13,6 +14,8 @@ const AdminPanel = () => {
         return <ManageUsers />;
       case "editTours":
         return <EditTourPackages />;
+      case "postTours":
+        return <PostTour/>;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -34,6 +37,11 @@ const AdminPanel = () => {
       id: "manageUsers",
       label: "Manage Users",
       icon: <FiUsers className="mr-3" />,
+    },
+    {
+      id: "postTours",
+      label: "Post Tour Package",
+      icon: <FiPackage className="mr-3" />,
     },
     {
       id: "editTours",

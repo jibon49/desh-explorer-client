@@ -79,6 +79,7 @@ const GroupTravelPostForm = () => {
         email: mongoUser?.userMail || "",
         photo: mongoUser?.userPhoto || "",
         phone: mongoUser?.userPhone || "N/A",
+        role: mongoUser?.userRole || "member",
       },
     };
 
