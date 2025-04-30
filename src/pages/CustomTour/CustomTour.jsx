@@ -23,7 +23,9 @@ const CustomTour = () => {
   const axiosSecure = useAxiosSecure();
 
   const [leaveDate, setLeaveDate] = useState(null);
+  const [returnDate, setReturnDate] = useState(null);
   const [serviceChoose, setService] = useState("");
+  const [provider, setProvider] = useState("");
   const [classValue, setClass] = useState("");
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
@@ -37,8 +39,28 @@ const CustomTour = () => {
   const [numRooms, setNumRooms] = useState(1);
   const [locations, setLocations] = useState([]);
   const [leaveAnchorEl, setLeaveAnchorEl] = useState(null);
+  const [returnAnchorEl, setReturnAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const {mongoUser} = useMongoUser()
+  const {mongoUser} = useMongoUser();
+
+  // Transport providers data
+  const transportProviders = {
+    1: [ // Bus providers
+      { id: 7, name: "Desh Travel" },
+      { id: 8, name: "Green Line" },
+      { id: 9, name: "Golden Line" }
+    ],
+    2: [ // Plane providers
+      { id: 10, name: "Biman Bangladesh" },
+      { id: 11, name: "US Bangla" },
+      { id: 12, name: "Novo Air" }
+    ],
+    3: [ // Train providers
+      { id: 13, name: "Bangladesh Railway" },
+      { id: 14, name: "Dhaka Metro" },
+      { id: 15, name: "Metrorail" }
+    ]
+  };
 
   const seatMap = {
     1: { name: "Car", seats: "4 seats", icon: <FaCar className="mr-2" /> },
@@ -56,7 +78,7 @@ const CustomTour = () => {
   const transportPriceKey = `${serviceChoose}-${classValue}`;
   const transportPricePerNight = transportPriceMap[transportPriceKey] || 0;
   const totalTransportPrice = transportPricePerNight * numGuests;
-  const hotelPrice = selectedHotel ? selectedHotel.price * numRooms * numGuests : 0;
+  const hotelPrice = selectedHotel ? selectedHotel.price * numRooms * numGuests * (returnDate ? Math.ceil((returnDate - leaveDate) / (1000 * 60 * 60 * 24)) : 1) : 0;
   const totalPrice = hotelPrice + (needTransport ? totalTransportPrice : 0) + (needRental ? rentalNumeric : 0);
 
   useEffect(() => {
@@ -83,11 +105,18 @@ const CustomTour = () => {
       return;
     }
 
+    if (returnDate && returnDate <= leaveDate) {
+      Swal.fire("Error", "Return date must be after travel date", "error");
+      return;
+    }
+
     const bookingData = {
       userEmail: mongoUser?.userMail,
       fromLocation,
       toLocation,
       travelDate: leaveDate,
+      returnDate: returnDate || null,
+      duration: returnDate ? Math.ceil((returnDate - leaveDate) / (1000 * 60 * 60 * 24)) : 1,
       hotel: {
         id: selectedHotel._id,
         name: selectedHotel.name,
@@ -97,6 +126,7 @@ const CustomTour = () => {
       },
       transport: needTransport ? {
         type: ["Bus", "Plane", "Train"][serviceChoose - 1],
+        provider: transportProviders[serviceChoose].find(p => p.id === provider)?.name || "",
         class: ["", "", "", "Business", "First Class", "Economy"][classValue],
         guests: numGuests,
         price: totalTransportPrice,
@@ -128,9 +158,11 @@ const CustomTour = () => {
 
   const handleReset = () => {
     setLeaveDate(null);
+    setReturnDate(null);
     setFromLocation("");
     setToLocation("");
     setService("");
+    setProvider("");
     setClass("");
     setNumGuests(1);
     setNumRooms(1);
@@ -139,8 +171,6 @@ const CustomTour = () => {
     setNeedTransport(false);
     setSelectedHotel(null);
   };
-
-  console.log(hotels,mongoUser?.userMail)
 
   return (
     <>
@@ -200,33 +230,78 @@ const CustomTour = () => {
                       </Select>
                     </FormControl>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Travel Date
-                      </label>
-                      <Button
-                        onClick={(e) => setLeaveAnchorEl(e.currentTarget)}
-                        className="w-full text-left border p-3 rounded-lg flex items-center"
-                        startIcon={<IoCalendarClearOutline />}
-                      >
-                        {leaveDate ? leaveDate.toLocaleDateString() : "Select date"}
-                      </Button>
-                      <Popover
-                        open={Boolean(leaveAnchorEl)}
-                        anchorEl={leaveAnchorEl}
-                        onClose={() => setLeaveAnchorEl(null)}
-                      >
-                        <DayPicker
-                          mode="single"
-                          selected={leaveDate}
-                          onSelect={(date) => {
-                            setLeaveDate(date);
-                            setLeaveAnchorEl(null);
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Travel Date
+                        </label>
+                        <Button
+                          onClick={(e) => setLeaveAnchorEl(e.currentTarget)}
+                          className="w-full text-left border p-3 rounded-lg flex items-center"
+                          startIcon={<IoCalendarClearOutline />}
+                        >
+                          {leaveDate ? leaveDate.toLocaleDateString() : "Select date"}
+                        </Button>
+                        <Popover
+                          open={Boolean(leaveAnchorEl)}
+                          anchorEl={leaveAnchorEl}
+                          onClose={() => setLeaveAnchorEl(null)}
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
                           }}
-                          disabled={{ before: new Date() }}
-                          className="border-0"
-                        />
-                      </Popover>
+                        >
+                          <DayPicker
+                            mode="single"
+                            selected={leaveDate}
+                            onSelect={(date) => {
+                              setLeaveDate(date);
+                              setLeaveAnchorEl(null);
+                              if (returnDate && date >= returnDate) {
+                                setReturnDate(null);
+                              }
+                            }}
+                            disabled={{ before: new Date() }}
+                            className="border-0"
+                          />
+                        </Popover>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Return Date (Optional)
+                        </label>
+                        <Button
+                          onClick={(e) => setReturnAnchorEl(e.currentTarget)}
+                          disabled={!leaveDate}
+                          className="w-full text-left border p-3 rounded-lg flex items-center"
+                          startIcon={<IoCalendarClearOutline />}
+                        >
+                          {returnDate ? returnDate.toLocaleDateString() : "Select date"}
+                        </Button>
+                        <Popover
+                          open={Boolean(returnAnchorEl)}
+                          anchorEl={returnAnchorEl}
+                          onClose={() => setReturnAnchorEl(null)}
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                          }}
+                        >
+                          <DayPicker
+                            mode="single"
+                            selected={returnDate}
+                            onSelect={(date) => {
+                              setReturnDate(date);
+                              setReturnAnchorEl(null);
+                            }}
+                            disabled={{ 
+                              before: leaveDate ? new Date(leaveDate.getTime() + 24 * 60 * 60 * 1000) : new Date() 
+                            }}
+                            className="border-0"
+                          />
+                        </Popover>
+                      </div>
                     </div>
 
                     <FormControl fullWidth>
@@ -351,7 +426,10 @@ const CustomTour = () => {
                         <InputLabel>Transport Type</InputLabel>
                         <Select
                           value={serviceChoose}
-                          onChange={(e) => setService(e.target.value)}
+                          onChange={(e) => {
+                            setService(e.target.value);
+                            setProvider(""); // Reset provider when transport type changes
+                          }}
                           label="Transport Type"
                         >
                           <MenuItem value={1}>
@@ -375,18 +453,37 @@ const CustomTour = () => {
                         </Select>
                       </FormControl>
 
-                      <FormControl fullWidth>
-                        <InputLabel>Class</InputLabel>
-                        <Select
-                          value={classValue}
-                          onChange={(e) => setClass(e.target.value)}
-                          label="Class"
-                        >
-                          <MenuItem value={4}>Business Class</MenuItem>
-                          <MenuItem value={5}>First Class</MenuItem>
-                          <MenuItem value={6}>Economy Class</MenuItem>
-                        </Select>
-                      </FormControl>
+                      {serviceChoose && (
+                        <>
+                          <FormControl fullWidth>
+                            <InputLabel>Provider</InputLabel>
+                            <Select
+                              value={provider}
+                              onChange={(e) => setProvider(e.target.value)}
+                              label="Provider"
+                            >
+                              {transportProviders[serviceChoose]?.map((providerItem) => (
+                                <MenuItem key={providerItem.id} value={providerItem.id}>
+                                  {providerItem.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+
+                          <FormControl fullWidth>
+                            <InputLabel>Class</InputLabel>
+                            <Select
+                              value={classValue}
+                              onChange={(e) => setClass(e.target.value)}
+                              label="Class"
+                            >
+                              <MenuItem value={4}>Business Class</MenuItem>
+                              <MenuItem value={5}>First Class</MenuItem>
+                              <MenuItem value={6}>Economy Class</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </>
+                      )}
 
                       <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                         <p className="text-center font-bold text-2xl text-blue-600">
@@ -453,6 +550,7 @@ const CustomTour = () => {
                 </div>
               </div>
             </div>
+            
           </div>
 
           {/* Summary Section */}
@@ -474,6 +572,11 @@ const CustomTour = () => {
                     <p className="text-gray-600">
                       {numRooms} {numRooms === 1 ? 'room' : 'rooms'} × {numGuests} {numGuests === 1 ? 'person' : 'people'}
                     </p>
+                    {returnDate && (
+                      <p className="text-gray-600">
+                        {Math.ceil((returnDate - leaveDate) / (1000 * 60 * 60 * 24))} nights
+                      </p>
+                    )}
                     <p className="font-bold text-lg mt-2">
                       ${hotelPrice}
                     </p>
@@ -495,6 +598,11 @@ const CustomTour = () => {
                       {["Bus", "Plane", "Train"][serviceChoose - 1]} - 
                       {["", "", "", "Business", "First Class", "Economy"][classValue]}
                     </p>
+                    {provider && (
+                      <p className="text-gray-600">
+                        Provider: {transportProviders[serviceChoose].find(p => p.id === provider)?.name}
+                      </p>
+                    )}
                     <p className="font-bold text-lg mt-2">
                       ${totalTransportPrice}
                     </p>
@@ -539,9 +647,10 @@ const CustomTour = () => {
                 </button>
                 <button
                   onClick={handleSubmit}
+                  disabled={loading}
                   className="btn btn-primary flex-1 py-3 text-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                 >
-                  Confirm Booking
+                  {loading ? 'Processing...' : 'Confirm Booking'}
                 </button>
               </div>
             </div>
