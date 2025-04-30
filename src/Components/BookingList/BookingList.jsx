@@ -193,6 +193,7 @@ const BookingList = () => {
                                         </h4>
                                         <div className="space-y-2 text-sm">
                                             <p><span className="font-medium">Transaction ID:</span> {selectedBooking.transactionId}</p>
+                                            <p><span className="font-medium">Tour Type:</span> {selectedBooking.tourType}</p>
                                             <p><span className="font-medium">Tour:</span> {selectedBooking.tourTitle}</p>
                                             <p><span className="font-medium">Travel Date:</span> {selectedBooking.travelDate}</p>
                                             <p><span className="font-medium">Booking Date:</span> {new Date(selectedBooking.bookingDate).toLocaleDateString()}</p>
