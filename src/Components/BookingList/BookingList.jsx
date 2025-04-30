@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaTimes, FaCheck, FaClock, FaCalendarAlt, FaUser, FaEnvelope, FaPhone, FaUsers, FaMoneyBillWave, FaComment, FaSave } from 'react-icons/fa';
 
-const MyBookings = () => {
+const BookingList = () => {
     const [bookings, setBookings] = useState([]);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,7 +27,24 @@ const MyBookings = () => {
         ));
     };
 
-    
+    const saveBookingStatus = async (bookingId, newStatus) => {
+        try {
+            const response = await fetch(`/api/bookings/${bookingId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (!response.ok) {
+                throw new Error('Database update failed');
+            }
+            console.log('Booking status saved successfully');
+            // Optionally update state or show a message to the user
+        } catch (error) {
+            console.error('Error updating booking status in database:', error);
+        }
+    };
 
     const getStatusBadge = (status) => {
         switch(status.toLowerCase()) {
@@ -89,11 +106,28 @@ const MyBookings = () => {
                                         </td>
                                         <td className="text-gray-600">{booking.travelDate}</td>
                                         <td>
-                                            {getStatusBadge(booking.status)}
+                                            <select
+                                                value={booking.status}
+                                                onChange={(e) => updateBookingStatus(booking.transactionId, e.target.value)}
+                                                className={`select select-bordered select-sm max-w-xs ${
+                                                    booking.status === 'Confirmed' ? 'bg-green-50 text-green-700' :
+                                                    booking.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' :
+                                                    'bg-red-50 text-red-700'
+                                                }`}
+                                            >
+                                                <option value="Pending">Pending</option>
+                                                <option value="Confirmed">Confirmed</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                            </select>
                                         </td>
                                         <td className="text-right">
                                             <div className="flex gap-2 justify-end">
-                                                
+                                                <button
+                                                    onClick={() => saveBookingStatus(booking.transactionId, booking.status)}
+                                                    className="btn btn-sm btn-success gap-2"
+                                                >
+                                                    <FaSave /> Save
+                                                </button>
                                                 <button
                                                     onClick={() => setSelectedBooking(booking)}
                                                     className="btn btn-sm btn-outline btn-primary gap-2"
@@ -204,7 +238,33 @@ const MyBookings = () => {
                                         </div>
                                     )}
                                 </div>
-                            </div>                           
+                            </div>
+                            
+                            {/* Status Update */}
+                            <div className="mt-6 gap-2 flex items-center justify-between">
+                                <h4 className="font-semibold text-gray-700 mb-2">Update Booking Status</h4>
+                                <select
+                                    value={selectedBooking.status}
+                                    onChange={(e) => {
+                                        updateBookingStatus(selectedBooking.transactionId, e.target.value);
+                                        setSelectedBooking({
+                                            ...selectedBooking,
+                                            status: e.target.value
+                                        });
+                                    }}
+                                    className="select select-bordered w-full max-w-xs"
+                                >
+                                    <option value="Pending">Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                                <button
+                                                    onClick={() => saveBookingStatus(booking.transactionId, booking.status)}
+                                                    className="btn btn-sm btn-success gap-2"
+                                                >
+                                                    <FaSave /> Save
+                                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,4 +273,4 @@ const MyBookings = () => {
     );
 };
 
-export default MyBookings;
+export default BookingList;

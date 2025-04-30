@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { FiUsers, FiPackage, FiMenu, FiX } from "react-icons/fi";
+import { IoAddOutline } from "react-icons/io5";
 import EditTourPackages from "../EditTourPackages/EditTourPackages";
 import ManageUsers from "../ManageUsers/ManageUsers";
 import PostTour from "./PostTour";
-
+import BookingList from "../BookingList/BookingList";
+import { TbBrandBooking } from "react-icons/tb";
+import { MdOutlineTour } from "react-icons/md";
+import CustomTourManage from "../CustomTourManage/CustomTourManage";
 const AdminPanel = () => {
   const [selectedOption, setSelectedOption] = useState("manageUsers");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,6 +20,10 @@ const AdminPanel = () => {
         return <EditTourPackages />;
       case "postTours":
         return <PostTour/>;
+      case "bookingList":
+        return <BookingList/>;
+      case "customToursManage":
+        return <CustomTourManage />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -40,13 +48,23 @@ const AdminPanel = () => {
     },
     {
       id: "postTours",
-      label: "Post Tour Package",
-      icon: <FiPackage className="mr-3" />,
+      label: " Add Tour Package",
+      icon: <IoAddOutline className="mr-3" />,
     },
     {
       id: "editTours",
       label: "Edit Tour Packages",
       icon: <FiPackage className="mr-3" />,
+    },
+    {
+      id: "bookingList",
+      label: "Booking List",
+      icon: <TbBrandBooking className="mr-3" />,
+    },
+    {
+      id: "customToursManage",
+      label: "Custom Tour Packages Managment",
+      icon: <MdOutlineTour className="mr-3" />,
     },
   ];
 
