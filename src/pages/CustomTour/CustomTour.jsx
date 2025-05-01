@@ -428,7 +428,7 @@ const CustomTour = () => {
                           value={serviceChoose}
                           onChange={(e) => {
                             setService(e.target.value);
-                            setProvider(""); // Reset provider when transport type changes
+                            setProvider(""); 
                           }}
                           label="Transport Type"
                         >

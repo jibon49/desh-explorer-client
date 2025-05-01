@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    FaEye, FaTimes, FaCheck, FaClock, FaCalendarAlt, FaUser, FaEnvelope,
-    FaPhone, FaUsers, FaMoneyBillWave, FaComment, FaSave
-} from 'react-icons/fa';
+import { FaEye, FaTimes, FaCheck, FaClock, FaCalendarAlt, FaUser, FaEnvelope, FaPhone, FaUsers, FaMoneyBillWave, FaComment, FaSave } from 'react-icons/fa';
 
 const BookingList = () => {
     const [bookings, setBookings] = useState([]);
@@ -23,9 +20,9 @@ const BookingList = () => {
     }, []);
 
     const updateBookingStatus = (bookingId, newStatus) => {
-        setBookings(bookings.map(booking =>
-            booking.transactionId === bookingId
-                ? { ...booking, status: newStatus }
+        setBookings(bookings.map(booking => 
+            booking.transactionId === bookingId 
+                ? { ...booking, status: newStatus } 
                 : booking
         ));
     };
@@ -43,13 +40,14 @@ const BookingList = () => {
                 throw new Error('Database update failed');
             }
             console.log('Booking status saved successfully');
+            // Optionally update state or show a message to the user
         } catch (error) {
             console.error('Error updating booking status in database:', error);
         }
     };
 
     const getStatusBadge = (status) => {
-        switch (status.toLowerCase()) {
+        switch(status.toLowerCase()) {
             case 'confirmed':
                 return <span className="badge badge-success gap-2"><FaCheck /> Confirmed</span>;
             case 'pending':
@@ -60,10 +58,6 @@ const BookingList = () => {
                 return <span className="badge badge-info gap-2">{status}</span>;
         }
     };
-
-    const groupTourBookings = bookings.filter(
-        (booking) => booking.tourType?.toLowerCase() === 'group'
-    );
 
     if (loading) {
         return (
@@ -83,9 +77,9 @@ const BookingList = () => {
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
                     <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
                         <FaCalendarAlt className="text-xl" />
-                        Group Tour Bookings
+                        Booking Management
                     </h2>
-                    <p className="text-blue-100 mt-1">View and manage group tour bookings only</p>
+                    <p className="text-blue-100 mt-1">View and manage all tour bookings</p>
                 </div>
 
                 {/* Booking Table */}
@@ -102,8 +96,8 @@ const BookingList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {groupTourBookings.length > 0 ? (
-                                groupTourBookings.map((booking) => (
+                            {bookings.length > 0 ? (
+                                bookings.map((booking) => (
                                     <tr key={booking.transactionId} className="hover:bg-gray-50">
                                         <td className="font-medium text-gray-800">{booking.transactionId}</td>
                                         <td className="text-gray-600">{booking.tourTitle}</td>
@@ -147,7 +141,7 @@ const BookingList = () => {
                             ) : (
                                 <tr>
                                     <td colSpan="6" className="text-center py-8 text-gray-500">
-                                        No group tour bookings found
+                                        No bookings found
                                     </td>
                                 </tr>
                             )}
@@ -159,7 +153,7 @@ const BookingList = () => {
                 <div className="bg-gray-50 p-4 border-t border-gray-200">
                     <div className="flex justify-between items-center text-sm text-gray-600">
                         <div>
-                            Showing <span className="font-medium">{groupTourBookings.length}</span> group tour bookings
+                            Showing <span className="font-medium">{bookings.length}</span> bookings
                         </div>
                     </div>
                 </div>
@@ -181,7 +175,7 @@ const BookingList = () => {
                                 <FaTimes />
                             </button>
                         </div>
-
+                        
                         <div className="p-6">
                             {/* Tour Image */}
                             <img
@@ -189,7 +183,7 @@ const BookingList = () => {
                                 alt={selectedBooking.tourTitle}
                                 className="w-full h-48 object-cover rounded-lg mb-6"
                             />
-
+                            
                             {/* Booking Info */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
@@ -199,17 +193,17 @@ const BookingList = () => {
                                         </h4>
                                         <div className="space-y-2 text-sm">
                                             <p><span className="font-medium">Transaction ID:</span> {selectedBooking.transactionId}</p>
-                                            <p><span className="font-medium">Tour:</span> {selectedBooking.tourTitle}</p>
                                             <p><span className="font-medium">Tour Type:</span> {selectedBooking.tourType}</p>
+                                            <p><span className="font-medium">Tour:</span> {selectedBooking.tourTitle}</p>
                                             <p><span className="font-medium">Travel Date:</span> {selectedBooking.travelDate}</p>
                                             <p><span className="font-medium">Booking Date:</span> {new Date(selectedBooking.bookingDate).toLocaleDateString()}</p>
                                             <p className="flex items-center gap-2">
-                                                <span className="font-medium">Status:</span>
+                                                <span className="font-medium">Status:</span> 
                                                 {getStatusBadge(selectedBooking.status)}
                                             </p>
                                         </div>
                                     </div>
-
+                                    
                                     <div>
                                         <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                             <FaUser /> Customer Details
@@ -221,7 +215,7 @@ const BookingList = () => {
                                         </div>
                                     </div>
                                 </div>
-
+                                
                                 <div className="space-y-4">
                                     <div>
                                         <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -233,7 +227,7 @@ const BookingList = () => {
                                             <p className="flex items-center gap-2"><FaMoneyBillWave /> <span className="font-medium">Total Price:</span> ${selectedBooking.totalPrice}</p>
                                         </div>
                                     </div>
-
+                                    
                                     {selectedBooking.specialRequests && (
                                         <div>
                                             <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -246,7 +240,7 @@ const BookingList = () => {
                                     )}
                                 </div>
                             </div>
-
+                            
                             {/* Status Update */}
                             <div className="mt-6 gap-2 flex items-center justify-between">
                                 <h4 className="font-semibold text-gray-700 mb-2">Update Booking Status</h4>
@@ -266,11 +260,11 @@ const BookingList = () => {
                                     <option value="Cancelled">Cancelled</option>
                                 </select>
                                 <button
-                                    onClick={() => saveBookingStatus(selectedBooking.transactionId, selectedBooking.status)}
-                                    className="btn btn-sm btn-success gap-2"
-                                >
-                                    <FaSave /> Save
-                                </button>
+                                                    onClick={() => saveBookingStatus(booking.transactionId, booking.status)}
+                                                    className="btn btn-sm btn-success gap-2"
+                                                >
+                                                    <FaSave /> Save
+                                                </button>
                             </div>
                         </div>
                     </div>

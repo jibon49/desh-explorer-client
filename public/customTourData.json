@@ -19,6 +19,10 @@
       { "id": 1, "name": "Car", "seats": "4 seats", "price": 850 },
       { "id": 2, "name": "Micro Bus", "seats": "15 seats", "price": 1200 },
       { "id": 3, "name": "Mini Bus", "seats": "25 seats", "price": 1800 }
+    ],
+    "priceChangeOptions": [
+      { "id": 10, "name": "Increase by Percentage" },
+      { "id": 11, "name": "Decrease by Percentage" },
+      { "id": 12, "name": "Fixed Amount Adjustment" }
     ]
-  }
-  
+}
