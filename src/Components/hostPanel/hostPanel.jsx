@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiMapPin, FiPlusCircle, FiMenu, FiX } from "react-icons/fi";
 import MyTours from "./MyTours";
+import MyBookings from "./../userPanel/MyBookings";
 
 const HostPanel = () => {
   const [selectedOption, setSelectedOption] = useState("myTours");
@@ -10,8 +11,8 @@ const HostPanel = () => {
     switch (selectedOption) {
       case "myTours":
         return <MyTours />;
-      case "createTour":
-        return <CreateTour />;
+        case "MyBookings":
+        return <MyBookings />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -33,7 +34,12 @@ const HostPanel = () => {
       id: "myTours",
       label: "My Tours",
       icon: <FiMapPin className="mr-3" />,
-    }
+    },
+    {
+      id: "MyBookings",
+      label: "My Bookings",
+      icon: <FiMapPin className="mr-3" />,
+    },
   ];
 
   return (

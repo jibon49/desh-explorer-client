@@ -72,6 +72,7 @@ const GroupTour = () => {
       </p>
     );
   console.log(mongoUser);
+  console.log(selectedTour);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
