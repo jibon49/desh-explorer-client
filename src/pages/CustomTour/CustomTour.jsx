@@ -1,5 +1,4 @@
 import { PiStarFill } from "react-icons/pi";
-import { DayPicker } from "react-day-picker";
 import { useState, useEffect } from "react";
 import backImage from "../../assets/banner3.jpg";
 import {
@@ -7,17 +6,17 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Popover,
-  Button,
 } from "@mui/material";
 import Banner from "../Home/Banner/Banner";
 import { FaCar, FaBus, FaPlane, FaTrain } from "react-icons/fa";
 import { GiModernCity } from "react-icons/gi";
-import { IoCalendarClearOutline } from "react-icons/io5";
 import { MdHotel, MdDirectionsCar, MdDirectionsBus } from "react-icons/md";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useMongoUser from "../../hooks/userMongoUser";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FiCalendar } from "react-icons/fi";
 
 const CustomTour = () => {
   const axiosSecure = useAxiosSecure();
@@ -38,8 +37,6 @@ const CustomTour = () => {
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [numRooms, setNumRooms] = useState(1);
   const [locations, setLocations] = useState([]);
-  const [leaveAnchorEl, setLeaveAnchorEl] = useState(null);
-  const [returnAnchorEl, setReturnAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
   const {mongoUser} = useMongoUser();
 
@@ -235,74 +232,49 @@ const CustomTour = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Travel Date
+                          <span className="flex items-center">
+                            <FiCalendar className="mr-2 text-blue-500" />
+                            Departure Date*
+                          </span>
                         </label>
-                        <Button
-                          onClick={(e) => setLeaveAnchorEl(e.currentTarget)}
-                          className="w-full text-left border p-3 rounded-lg flex items-center"
-                          startIcon={<IoCalendarClearOutline />}
-                        >
-                          {leaveDate ? leaveDate.toLocaleDateString() : "Select date"}
-                        </Button>
-                        <Popover
-                          open={Boolean(leaveAnchorEl)}
-                          anchorEl={leaveAnchorEl}
-                          onClose={() => setLeaveAnchorEl(null)}
-                          anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'left',
-                          }}
-                        >
-                          <DayPicker
-                            mode="single"
+                        <div className="relative">
+                          <DatePicker
                             selected={leaveDate}
-                            onSelect={(date) => {
-                              setLeaveDate(date);
-                              setLeaveAnchorEl(null);
-                              if (returnDate && date >= returnDate) {
-                                setReturnDate(null);
-                              }
-                            }}
-                            disabled={{ before: new Date() }}
-                            className="border-0"
+                            onChange={(date) => setLeaveDate(date)}
+                            selectsStart
+                            startDate={leaveDate}
+                            endDate={returnDate}
+                            className="input input-bordered w-full pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholderText="Select departure date"
+                            minDate={new Date()}
+                            required
+                            dateFormat="MMMM d, yyyy"
                           />
-                        </Popover>
+                          <FiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Return Date (Optional)
+                          <span className="flex items-center">
+                            <FiCalendar className="mr-2 text-blue-500" />
+                            Return Date (Optional)
+                          </span>
                         </label>
-                        <Button
-                          onClick={(e) => setReturnAnchorEl(e.currentTarget)}
-                          disabled={!leaveDate}
-                          className="w-full text-left border p-3 rounded-lg flex items-center"
-                          startIcon={<IoCalendarClearOutline />}
-                        >
-                          {returnDate ? returnDate.toLocaleDateString() : "Select date"}
-                        </Button>
-                        <Popover
-                          open={Boolean(returnAnchorEl)}
-                          anchorEl={returnAnchorEl}
-                          onClose={() => setReturnAnchorEl(null)}
-                          anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'left',
-                          }}
-                        >
-                          <DayPicker
-                            mode="single"
+                        <div className="relative">
+                          <DatePicker
                             selected={returnDate}
-                            onSelect={(date) => {
-                              setReturnDate(date);
-                              setReturnAnchorEl(null);
-                            }}
-                            disabled={{ 
-                              before: leaveDate ? new Date(leaveDate.getTime() + 24 * 60 * 60 * 1000) : new Date() 
-                            }}
-                            className="border-0"
+                            onChange={(date) => setReturnDate(date)}
+                            selectsEnd
+                            startDate={leaveDate}
+                            endDate={returnDate}
+                            minDate={leaveDate ? new Date(leaveDate.getTime() + 24 * 60 * 60 * 1000) : new Date()}
+                            className="input input-bordered w-full pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholderText="Select return date"
+                            dateFormat="MMMM d, yyyy"
                           />
-                        </Popover>
+                          <FiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
                       </div>
                     </div>
 
