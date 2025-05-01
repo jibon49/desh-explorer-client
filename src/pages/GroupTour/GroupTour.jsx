@@ -396,7 +396,7 @@ const GroupTour = () => {
                       allowFullScreen
                       referrerPolicy="no-referrer-when-downgrade"
                       src={`https://www.google.com/maps?q=${encodeURIComponent(
-                        selectedTour.map
+                        selectedTour.to
                       )}&output=embed`}
                     ></iframe>
                   </div>

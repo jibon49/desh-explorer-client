@@ -2,13 +2,13 @@ import React, { useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../Authproviders/AuthProviders";
 import useMongoUser from "../../hooks/userMongoUser";
-import DatePicker from "react-datepicker";
-import { FiCalendar } from "react-icons/fi";
-import "react-datepicker/dist/react-datepicker.css";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Swal from "sweetalert2";
 
 const PostTour = () => {
   const { user } = useContext(AuthContext);
   const { mongoUser } = useMongoUser();
+  const axiosSecure = useAxiosSecure();
 
   const [tourData, setTourData] = useState({
     title: '',
@@ -34,7 +34,7 @@ const PostTour = () => {
   });
 
   const [photo, setPhoto] = useState(null);
-  const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePhotoUpload = (e) => {
     setPhoto(e.target.files[0]);
@@ -89,84 +89,103 @@ const PostTour = () => {
     });
   };
 
+  const resetForm = () => {
+    setTourData({
+      title: '',
+      image: '',
+      type: '',
+      duration: '',
+      date: '',
+      price: '',
+      overview: '',
+      location: '',
+      from: '',
+      timing: '',
+      inclusion: [''],
+      exclusion: [''],
+      description: '',
+      additionalInfo: '',
+      travelTips: [''],
+      policy: {
+        cancellation: '',
+        reschedule: '',
+        refund: ''
+      }
+    });
+    setPhoto(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     let imageUrl = tourData.image;
 
-    if (photo) {
-      const formData = new FormData();
-      formData.append("image", photo);
+    try {
+      // Upload image if new photo is selected
+      if (photo) {
+        const formData = new FormData();
+        formData.append("image", photo);
 
-      try {
         const imgRes = await axios.post(
-          `https://api.imgbb.com/1/upload?key=${
-            import.meta.env.VITE_IMAGE_HOSTING_KEY
-          }`,
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMAGE_HOSTING_KEY}`,
           formData
         );
 
         if (imgRes.data.success) {
           imageUrl = imgRes.data.data.display_url;
         } else {
-          alert("Failed to upload image");
-          return;
+          throw new Error("Failed to upload image");
         }
-      } catch (err) {
-        console.error(err);
-        alert("Image upload failed.");
-        return;
       }
-    }
 
-    const newTour = {
-      ...tourData,
-      image: imageUrl,
-      createdBy: {
-        name: mongoUser?.userName || "",
-        email: mongoUser?.userMail || "",
-        photo: mongoUser?.userPhoto || "",
-        phone: mongoUser?.userPhone || "N/A",
-        role: mongoUser?.userRole || "member",
-      },
-    };
+      // Prepare tour data
+      const newTour = {
+        ...tourData,
+        image: imageUrl,
+        createdBy: {
+          name: mongoUser?.userName || "",
+          email: mongoUser?.userMail || "",
+          photo: mongoUser?.userPhoto || "",
+          phone: mongoUser?.userPhone || "N/A",
+          role: mongoUser?.userRole || "member",
+        },
+      };
 
-    try {
-      const response = await axios.post('/api/tourPackages', newTour);
+      // Submit to backend
+      const response = await axiosSecure.post('/api/tourPackages', newTour);
+
       if (response.data.insertedId) {
-        setSubmissionStatus({ success: true, message: 'Tour created successfully!' });
-        // Reset form
-        setTourData({
-          title: '',
-          image: '',
-          type: '',
-          duration: '',
-          date: '',
-          price: '',
-          overview: '',
-          location: '',
-          from: '',
-          timing: '',
-          inclusion: [''],
-          exclusion: [''],
-          description: '',
-          additionalInfo: '',
-          travelTips: [''],
-          policy: {
-            cancellation: '',
-            reschedule: '',
-            refund: ''
+        // Show success alert
+        await Swal.fire({
+          title: 'Success!',
+          text: 'Tour package created successfully',
+          icon: 'success',
+          confirmButtonText: 'OK',
+          timer: 3000,
+          timerProgressBar: true,
+          didClose: () => {
+            resetForm();
           }
         });
-        setPhoto(null);
       } else {
-        throw new Error('Post failed');
+        throw new Error('Failed to create tour');
       }
     } catch (error) {
-      setSubmissionStatus({ success: false, message: 'Error creating tour. Please try again.' });
-      console.error('Error posting tour:', error);
+      console.error('Error creating tour:', error);
+      
+      // Show error alert
+      await Swal.fire({
+        title: 'Error!',
+        text: error.response?.data?.message || 'Failed to create tour package',
+        icon: 'error',
+        confirmButtonText: 'Try Again'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8 px-4">
@@ -178,12 +197,6 @@ const PostTour = () => {
               Fill in the details below to add a new tour
             </p>
           </div>
-
-          {submissionStatus && (
-            <div className={`px-6 py-3 ${submissionStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {submissionStatus.message}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -657,22 +670,34 @@ const PostTour = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end pt-4">
-              <button type="submit" className="btn btn-primary px-8">
-                Create Tour Package
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 ml-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+              <button 
+                type="submit" 
+                className="btn btn-primary px-8"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="loading loading-spinner"></span>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    Create Tour Package
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 ml-2"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </>
+                )}
               </button>
             </div>
           </form>

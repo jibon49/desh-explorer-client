@@ -13,6 +13,7 @@ import UserDashboard from "../pages/userDashboard/userDashboard";
 import GroupTour from "../pages/GroupTour/GroupTour";
 import ComplainForm from "../pages/ComplainForm/ComplainForm";
 import BlogsReview from "../pages/BlogsReview/BlogsReview";
+import AboutUs from "../pages/AboutUs/AboutUs";
 
   export const router = createBrowserRouter([
     {
@@ -58,6 +59,10 @@ import BlogsReview from "../pages/BlogsReview/BlogsReview";
         {
           path:'blogs-review',
           element:<BlogsReview></BlogsReview>
+        },
+        {
+          path:"aboutus",
+          element:<AboutUs></AboutUs>
         }
       ]
     },

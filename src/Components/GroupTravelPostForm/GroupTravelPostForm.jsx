@@ -5,6 +5,7 @@ import useMongoUser from "../../hooks/userMongoUser";
 import DatePicker from "react-datepicker";
 import { FiCalendar } from "react-icons/fi";
 import "react-datepicker/dist/react-datepicker.css";
+import Swal from "sweetalert2";
 
 const GroupTravelPostForm = () => {
   const { user } = useContext(AuthContext);
@@ -18,7 +19,6 @@ const GroupTravelPostForm = () => {
   const [toLocation, setToLocation] = useState("");
   const [organizer, setOrganizer] = useState("");
   const [price, setPrice] = useState("");
-  const [mapLink, setMapLink] = useState("");
   const [photo, setPhoto] = useState(null);
   const [slots, setSlots] = useState(""); // Added slots state
   const [departureDate, setDepartureDate] = useState(null);
@@ -48,12 +48,20 @@ const GroupTravelPostForm = () => {
         if (imgRes.data.success) {
           imageUrl = imgRes.data.data.display_url;
         } else {
-          alert("Failed to upload image");
+          Swal.fire({
+            icon: "error",
+            title: "Image Upload Failed",
+            text: "Please try again.",
+          });
           return;
         }
       } catch (err) {
         console.error(err);
-        alert("Image upload failed.");
+        Swal.fire({
+          icon: "error",
+          title: "Image Upload Failed",
+          text: "Please try again.",
+        });
         return;
       }
     }
@@ -65,7 +73,6 @@ const GroupTravelPostForm = () => {
       organizer,
       details: postText,
       price: parseFloat(price),
-      map: mapLink,
       departureDate,
       returnDate,
       itinerary,
@@ -89,7 +96,11 @@ const GroupTravelPostForm = () => {
         newTour
       );
       if (response.data.insertedId) {
-        alert("Tour post created successfully!");
+        Swal.fire({
+          icon: "success",
+          title: "Post Created Successfully",
+          text: "Your group tour post has been created.",
+        });
         // Reset all form fields
         setTitle("");
         setFromLocation("");
@@ -97,7 +108,6 @@ const GroupTravelPostForm = () => {
         setOrganizer("");
         setPostText("");
         setPrice("");
-        setMapLink("");
         setItinerary([""]);
         setRules([""]);
         setPhoto(null);
@@ -107,7 +117,11 @@ const GroupTravelPostForm = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("Error submitting post.");
+      Swal.fire({
+        icon: "error",
+        title: "Post Creation Failed",
+        text: "Please try again.",
+      });
     }
   };
 
@@ -222,19 +236,7 @@ const GroupTravelPostForm = () => {
                 </div>
               </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">Map Link*</span>
-                </label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="https://maps.google.com/..."
-                  value={mapLink}
-                  onChange={(e) => setMapLink(e.target.value)}
-                  required
-                />
-              </div>
+           
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Departure Date */}
                 <div className="form-control">

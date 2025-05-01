@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { NavLink } from 'react-router-dom';
 
 export class Footer extends PureComponent {
   render() {
@@ -15,7 +16,7 @@ export class Footer extends PureComponent {
   </nav>
   <nav>
     <h6 className="footer-title">Desh Explorer</h6>
-    <a className="link link-hover">About us</a>
+    <NavLink to="aboutus" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>AboutUs</NavLink>
     <a className="link link-hover">Contact</a>
     <a className="link link-hover">Jobs</a>
     <a className="link link-hover">Press kit</a>
