@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Banner from "../Home/Banner/Banner";
 import backImage from "../../assets/tourbg.jpg";
 import { FormControl, MenuItem, Select } from "@mui/material";
+import Swal from "sweetalert2";
 import {
   FiMail,
   FiPhone,
@@ -82,24 +83,33 @@ const GroupTour = () => {
   };
 
   const handleBookTour = async () => {
-    try {
-      const res = await axios.patch(
-        `http://localhost:5000/group-tours/${selectedTour._id}/book`,
-        {
-          slots: parseInt(person),
+    if(person > selectedTour.availableSlots) {
+     // alert("Not enough slots available.");
+      Swal.fire('Warning', 'Not enough slots available.', 'error');
+      return;
+    }
+    else{
+      try {
+        const res = await axios.patch(
+          `http://localhost:5000/group-tours/${selectedTour._id}/book`,
+          {
+            slots: parseInt(person),
+          }
+        );
+  
+        if (res.data.modifiedCount > 0) {
+          //alert("Booking confirmed!");
+          Swal.fire('Successful', 'Booking is completed.', 'success');
+          setSelectedTour({
+            ...selectedTour,
+            availableSlots: selectedTour.availableSlots - person,
+          });
         }
-      );
-
-      if (res.data.modifiedCount > 0) {
-        alert("Booking confirmed!");
-        setSelectedTour({
-          ...selectedTour,
-          availableSlots: selectedTour.availableSlots - person,
-        });
+      } catch (err) {
+        Swal.fire('Error', 'Booking is Failed.', 'error');
+        //alert("Booking failed.");
+        console.error(err);
       }
-    } catch (err) {
-      alert("Booking failed.");
-      console.error(err);
     }
   };
   return (
@@ -494,12 +504,14 @@ const GroupTour = () => {
                       className="btn btn-primary px-8"
                       onClick={handleBookTour}
                       disabled={
-                        new Date(selectedTour.departureDate) < new Date()
+                        new Date(selectedTour.departureDate) < new Date() ||
+                        selectedTour.availableSlots < 1
                       }
                     >
                       {new Date(selectedTour.departureDate) < new Date()
                         ? "Date Passed"
                         : "Book Now"}
+                        
                     </button>
                   </div>
                 </div>

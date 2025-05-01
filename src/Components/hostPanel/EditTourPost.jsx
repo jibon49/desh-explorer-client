@@ -3,58 +3,25 @@ import { FaEdit, FaPlus, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import Swal from 'sweetalert2';
 
-const EditTourPackage = () => {
+const EditTourPost = () => {
   const axiosSecure = useAxiosSecure();
-  const [tourType, setTourType] = useState('group');
   const [tours, setTours] = useState([]);
   const [editingTour, setEditingTour] = useState(null);
   const [formData, setFormData] = useState({});
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    fetchTours();
-  }, [tourType, axiosSecure]);
-
-  const fetchTours = async () => {
-    try {
-      const endpoint = tourType === 'group' ? '/group-tours' : '/tourPackages';
-      const res = await axiosSecure.get(endpoint);
-      setTours(res.data);
-    } catch (err) {
-      console.error('Failed to fetch tours', err);
-      Swal.fire('Error', 'Failed to load tours', 'error');
-    }
-  };
-
-  const handleDeleteTour = async (tourId) => {
-    try {
-      const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
-      });
-
-      if (result.isConfirmed) {
-        const endpoint = tourType === 'group' 
-          ? `/group-tours/${tourId}`
-          : `/tourPackages/${tourId}`;
-        
-        const res = await axiosSecure.delete(endpoint);
-        
-        if (res.data.deletedCount > 0) {
-          Swal.fire('Deleted!', 'Tour package has been deleted.', 'success');
-          fetchTours();
-        }
+    const fetchTours = async () => {
+      try {
+        const res = await axiosSecure.get('/group-tours');
+        setTours(res.data);
+      } catch (err) {
+        console.error('Failed to fetch tours', err);
+        Swal.fire('Error', 'Failed to load tours', 'error');
       }
-    } catch (err) {
-      console.error('Failed to delete tour', err);
-      Swal.fire('Error', 'Failed to delete tour', 'error');
-    }
-  };
+    };
+    fetchTours();
+  }, [axiosSecure]);
 
   const handleEditClick = (tour) => {
     setEditingTour(tour);
@@ -89,18 +56,14 @@ const EditTourPackage = () => {
 
   const handleSave = async () => {
     try {
-      const endpoint = tourType === 'group' 
-        ? `/group-tours/update/${editingTour._id}`
-        : `/tourPackages/update/${editingTour._id}`;
-  
       const { _id, createdBy, ...cleanData } = formData;
-  
-      const res = await axiosSecure.patch(endpoint, cleanData);
-  
+      const res = await axiosSecure.patch(`/group-tours/update/${editingTour._id}`, cleanData);
+
       if (res.data.modifiedCount > 0 || res.data.acknowledged) {
         Swal.fire('Success', 'Tour updated successfully', 'success');
         setShowModal(false);
-        fetchTours();
+        const updatedRes = await axiosSecure.get('/group-tours');
+        setTours(updatedRes.data);
       }
     } catch (err) {
       console.error('Failed to update tour', err);
@@ -110,26 +73,14 @@ const EditTourPackage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">Manage Tour Packages</h2>
-        <div className="flex gap-4 items-center">
-          <select
-            className="select select-bordered w-full md:w-48"
-            value={tourType}
-            onChange={(e) => setTourType(e.target.value)}
-          >
-            <option value="group">Group Tours</option>
-            <option value="regular">Tour Packages</option>
-          </select>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Manage Group Tours</h2>
 
       <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-100">
         <table className="table w-full">
           <thead className="bg-gray-50">
             <tr>
               <th className="text-gray-700">Title</th>
-              <th className="text-gray-700">{tourType === 'group' ? 'Route' : 'Location'}</th>
+              <th className="text-gray-700">Route</th>
               <th className="text-gray-700">Price</th>
               <th className="text-gray-700">Duration</th>
               <th className="text-gray-700">Actions</th>
@@ -139,32 +90,19 @@ const EditTourPackage = () => {
             {tours.map((tour) => (
               <tr key={tour._id} className="hover:bg-gray-50">
                 <td className="font-medium">{tour.title}</td>
-                <td>
-                  {tourType === 'group' 
-                    ? `${tour.from} → ${tour.to}`
-                    : tour.location}
-                </td>
+                <td>{tour.from} → {tour.to}</td>
                 <td>${tour.price}</td>
                 <td>
-                  {tourType === 'group'
-                    ? `${new Date(tour.departureDate).toLocaleDateString()} - ${new Date(tour.returnDate).toLocaleDateString()}`
-                    : tour.duration}
+                  {new Date(tour.departureDate).toLocaleDateString()} - 
+                  {new Date(tour.returnDate).toLocaleDateString()}
                 </td>
                 <td>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleEditClick(tour)}
-                      className="btn btn-sm btn-primary gap-1"
-                    >
-                      <FaEdit /> Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTour(tour._id)}
-                      className="btn btn-sm btn-error gap-1"
-                    >
-                      <FaTrash /> Delete
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => handleEditClick(tour)}
+                    className="btn btn-sm btn-primary gap-1"
+                  >
+                    <FaEdit /> Edit
+                  </button>
                 </td>
               </tr>
             ))}
@@ -172,12 +110,11 @@ const EditTourPackage = () => {
         </table>
       </div>
 
-      {/* Edit Modal */}
       {showModal && (
         <div className="modal modal-open">
           <div className="modal-box max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold">Edit Tour Package</h3>
+              <h3 className="text-xl font-bold">Edit Group Tour</h3>
               <button 
                 onClick={() => setShowModal(false)}
                 className="btn btn-sm btn-circle"
@@ -187,7 +124,6 @@ const EditTourPackage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Common Fields */}
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Title</span>
@@ -214,68 +150,60 @@ const EditTourPackage = () => {
                 />
               </div>
 
-              {/* Type-Specific Fields */}
-              {tourType === 'group' ? (
-                <>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">From</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="from"
-                      className="input input-bordered"
-                      value={formData.from || ''}
-                      onChange={handleChange}
-                    />
-                  </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">From</span>
+                </label>
+                <input
+                  type="text"
+                  name="from"
+                  className="input input-bordered"
+                  value={formData.from || ''}
+                  onChange={handleChange}
+                />
+              </div>
 
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">To</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="to"
-                      className="input input-bordered"
-                      value={formData.to || ''}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Location</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="location"
-                      className="input input-bordered"
-                      value={formData.location || ''}
-                      onChange={handleChange}
-                    />
-                  </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">To</span>
+                </label>
+                <input
+                  type="text"
+                  name="to"
+                  className="input input-bordered"
+                  value={formData.to || ''}
+                  onChange={handleChange}
+                />
+              </div>
 
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Duration</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="duration"
-                      className="input input-bordered"
-                      value={formData.duration || ''}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </>
-              )}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Departure Date</span>
+                </label>
+                <input
+                  type="date"
+                  name="departureDate"
+                  className="input input-bordered"
+                  value={formData.departureDate?.slice(0, 10) || ''}
+                  onChange={handleChange}
+                />
+              </div>
 
-              {/* Array Fields */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Return Date</span>
+                </label>
+                <input
+                  type="date"
+                  name="returnDate"
+                  className="input input-bordered"
+                  value={formData.returnDate?.slice(0, 10) || ''}
+                  onChange={handleChange}
+                />
+              </div>
+
               <div className="col-span-2 space-y-4">
-                {(tourType === 'group' ? ['itinerary', 'rules'] : ['inclusion', 'exclusion']).map((field) => (
+                {['itinerary', 'rules'].map((field) => (
                   <div key={field} className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-medium capitalize">{field}</h4>
@@ -322,4 +250,4 @@ const EditTourPackage = () => {
   );
 };
 
-export default EditTourPackage;
+export default EditTourPost;
