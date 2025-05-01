@@ -2,11 +2,25 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import Banner from "../Home/Banner/Banner";
-import { FiAlertCircle, FiArrowRight, FiBookOpen, FiCalendar, FiCheck, FiCheckCircle, FiClock, FiFileText, FiInfo, FiMapPin, FiSun, FiX } from "react-icons/fi";
+import {
+  FiAlertCircle,
+  FiArrowRight,
+  FiBookOpen,
+  FiCalendar,
+  FiCheck,
+  FiCheckCircle,
+  FiClock,
+  FiFileText,
+  FiInfo,
+  FiMapPin,
+  FiSun,
+  FiX,
+} from "react-icons/fi";
 
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
+  const [travelers, setTravelers] = useState(1); // new state for number of travelers
 
   useEffect(() => {
     axios
@@ -348,13 +362,17 @@ const TourDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Number of Travelers
                   </label>
-                  <select className="select select-bordered w-full focus:ring-2 focus:ring-blue-500">
-                    <option>1 person</option>
-                    <option>2 people</option>
-                    <option>3 people</option>
-                    <option>4 people</option>
-                    <option>5 people</option>
-                    <option>6 people</option>
+                  <select
+                    value={travelers}
+                    onChange={(e) => setTravelers(Number(e.target.value))}
+                    className="select select-bordered w-full focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={1}>1 person</option>
+                    <option value={2}>2 people</option>
+                    <option value={3}>3 people</option>
+                    <option value={4}>4 people</option>
+                    <option value={5}>5 people</option>
+                    <option value={6}>6 people</option>
                   </select>
                 </div>
 
@@ -367,6 +385,13 @@ const TourDetails = () => {
                     placeholder="Any special requirements?"
                     rows="3"
                   ></textarea>
+                </div>
+
+                <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg">
+                  <span className="text-gray-700">Total Price</span>
+                  <span className="text-xl font-bold text-blue-600">
+                    ${tour.price * travelers}
+                  </span>
                 </div>
 
                 <button

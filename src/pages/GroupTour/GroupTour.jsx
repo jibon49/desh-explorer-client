@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Banner from "../Home/Banner/Banner";
 import backImage from "../../assets/tourbg.jpg";
 import { FormControl, MenuItem, Select } from "@mui/material";
+import Swal from "sweetalert2";
 import {
   FiMail,
   FiPhone,
@@ -83,7 +84,8 @@ const GroupTour = () => {
 
   const handleBookTour = async () => {
     if(person > selectedTour.availableSlots) {
-      alert("Not enough slots available.");
+     // alert("Not enough slots available.");
+      Swal.fire('Warning', 'Not enough slots available.', 'error');
       return;
     }
     else{
@@ -96,14 +98,16 @@ const GroupTour = () => {
         );
   
         if (res.data.modifiedCount > 0) {
-          alert("Booking confirmed!");
+          //alert("Booking confirmed!");
+          Swal.fire('Successful', 'Booking is completed.', 'success');
           setSelectedTour({
             ...selectedTour,
             availableSlots: selectedTour.availableSlots - person,
           });
         }
       } catch (err) {
-        alert("Booking failed.");
+        Swal.fire('Error', 'Booking is Failed.', 'error');
+        //alert("Booking failed.");
         console.error(err);
       }
     }
