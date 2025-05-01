@@ -5,6 +5,7 @@ import useMongoUser from "../../hooks/userMongoUser";
 import DatePicker from "react-datepicker";
 import { FiCalendar } from "react-icons/fi";
 import "react-datepicker/dist/react-datepicker.css";
+import Swal from "sweetalert2";
 
 const GroupTravelPostForm = () => {
   const { user } = useContext(AuthContext);
@@ -47,12 +48,20 @@ const GroupTravelPostForm = () => {
         if (imgRes.data.success) {
           imageUrl = imgRes.data.data.display_url;
         } else {
-          alert("Failed to upload image");
+          Swal.fire({
+            icon: "error",
+            title: "Image Upload Failed",
+            text: "Please try again.",
+          });
           return;
         }
       } catch (err) {
         console.error(err);
-        alert("Image upload failed.");
+        Swal.fire({
+          icon: "error",
+          title: "Image Upload Failed",
+          text: "Please try again.",
+        });
         return;
       }
     }
@@ -87,7 +96,11 @@ const GroupTravelPostForm = () => {
         newTour
       );
       if (response.data.insertedId) {
-        alert("Tour post created successfully!");
+        Swal.fire({
+          icon: "success",
+          title: "Post Created Successfully",
+          text: "Your group tour post has been created.",
+        });
         // Reset all form fields
         setTitle("");
         setFromLocation("");
@@ -104,7 +117,11 @@ const GroupTravelPostForm = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("Error submitting post.");
+      Swal.fire({
+        icon: "error",
+        title: "Post Creation Failed",
+        text: "Please try again.",
+      });
     }
   };
 
@@ -219,10 +236,7 @@ const GroupTravelPostForm = () => {
                 </div>
               </div>
 
-<<<<<<< HEAD
-=======
            
->>>>>>> 3d21a3a604402cb6e27ac80bb1bd7c629f395e69
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Departure Date */}
                 <div className="form-control">
