@@ -219,6 +219,10 @@ const GroupTravelPostForm = () => {
                 </div>
               </div>
 
+<<<<<<< HEAD
+=======
+           
+>>>>>>> 3d21a3a604402cb6e27ac80bb1bd7c629f395e69
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Departure Date */}
                 <div className="form-control">
