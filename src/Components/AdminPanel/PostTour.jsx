@@ -1,23 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FaImage, FaTrash, FaPlus, FaMinus, FaMapMarkerAlt, FaMoneyBillWave, FaCalendarAlt, FaClock, FaInfoCircle } from 'react-icons/fa';
+import React, { useState, useContext } from "react";
+import axios from "axios";
+import { AuthContext } from "../../Authproviders/AuthProviders";
+import useMongoUser from "../../hooks/userMongoUser";
+import DatePicker from "react-datepicker";
+import { FiCalendar } from "react-icons/fi";
+import "react-datepicker/dist/react-datepicker.css";
 
 const PostTour = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState('');
-  
+  const { user } = useContext(AuthContext);
+  const { mongoUser } = useMongoUser();
+
   const [tourData, setTourData] = useState({
     title: '',
     image: '',
     type: '',
     duration: '',
     date: '',
-    price: 0,
+    price: '',
     overview: '',
     location: '',
+    from: '',
     timing: '',
     inclusion: [''],
     exclusion: [''],
@@ -31,29 +33,14 @@ const PostTour = () => {
     }
   });
 
-  useEffect(() => {
-    const fetchTourData = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch tour data from your API
-        const response = await fetch(`/api/tours/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch tour data');
-        
-        const data = await response.json();
-        setTourData(data);
-        setImagePreview(data.image);
-      } catch (error) {
-        console.error('Error fetching tour:', error);
-        alert('Error loading tour data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const [photo, setPhoto] = useState(null);
+  const [submissionStatus, setSubmissionStatus] = useState(null);
 
-    if (id) fetchTourData();
-  }, [id]);
+  const handlePhotoUpload = (e) => {
+    setPhoto(e.target.files[0]);
+  };
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setTourData(prev => ({
       ...prev,
@@ -72,525 +59,624 @@ const PostTour = () => {
     }));
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setTourData(prev => ({ ...prev, image: file }));
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleListChange = (index, value, field) => {
+  const handleArrayChange = (e, arrayName, index) => {
+    const { value } = e.target;
     setTourData(prev => {
-      const updatedList = [...prev[field]];
-      updatedList[index] = value;
-      return { ...prev, [field]: updatedList };
+      const newArray = [...prev[arrayName]];
+      newArray[index] = value;
+      return {
+        ...prev,
+        [arrayName]: newArray
+      };
     });
   };
 
-  const addListItem = (field) => {
-    setTourData(prev => ({ ...prev, [field]: [...prev[field], ''] }));
+  const addArrayField = (arrayName) => {
+    setTourData(prev => ({
+      ...prev,
+      [arrayName]: [...prev[arrayName], '']
+    }));
   };
 
-  const removeListItem = (index, field) => {
-    if (tourData[field].length > 1) {
-      setTourData(prev => ({
+  const removeArrayField = (arrayName, index) => {
+    setTourData(prev => {
+      const newArray = [...prev[arrayName]];
+      newArray.splice(index, 1);
+      return {
         ...prev,
-        [field]: prev[field].filter((_, i) => i !== index)
-      }));
-    }
+        [arrayName]: newArray
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    let imageUrl = tourData.image;
 
-    try {
+    if (photo) {
       const formData = new FormData();
-      
-      // Append basic fields
-      formData.append('title', tourData.title);
-      formData.append('type', tourData.type);
-      formData.append('duration', tourData.duration);
-      formData.append('date', tourData.date);
-      formData.append('price', tourData.price);
-      formData.append('overview', tourData.overview);
-      formData.append('location', tourData.location);
-      formData.append('timing', tourData.timing);
-      formData.append('description', tourData.description);
-      formData.append('additionalInfo', tourData.additionalInfo);
-      
-      // Append policy
-      formData.append('policy[cancellation]', tourData.policy.cancellation);
-      formData.append('policy[reschedule]', tourData.policy.reschedule);
-      formData.append('policy[refund]', tourData.policy.refund);
+      formData.append("image", photo);
 
-      // Append arrays
-      tourData.inclusion.forEach((item, index) => formData.append(`inclusion[${index}]`, item));
-      tourData.exclusion.forEach((item, index) => formData.append(`exclusion[${index}]`, item));
-      tourData.travelTips.forEach((item, index) => formData.append(`travelTips[${index}]`, item));
+      try {
+        const imgRes = await axios.post(
+          `https://api.imgbb.com/1/upload?key=${
+            import.meta.env.VITE_IMAGE_HOSTING_KEY
+          }`,
+          formData
+        );
 
-      // Append image if it's a new file
-      if (typeof tourData.image !== 'string') {
-        formData.append('image', tourData.image);
-      } else {
-        formData.append('imageUrl', tourData.image);
+        if (imgRes.data.success) {
+          imageUrl = imgRes.data.data.display_url;
+        } else {
+          alert("Failed to upload image");
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Image upload failed.");
+        return;
       }
-
-      const endpoint = id ? `/api/tours/${id}` : '/api/tours';
-      const method = id ? 'PUT' : 'POST';
-
-      const response = await fetch(endpoint, {
-        method,
-        body: formData
-      });
-
-      if (!response.ok) throw new Error('Failed to save tour');
-
-      const result = await response.json();
-      alert(id ? 'Tour updated successfully!' : 'Tour created successfully!');
-      navigate(`/admin/manage-tours`);
-    } catch (error) {
-      console.error('Error saving tour:', error);
-      alert('Error saving tour: ' + error.message);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this tour package?')) return;
+    const newTour = {
+      ...tourData,
+      image: imageUrl,
+      createdBy: {
+        name: mongoUser?.userName || "",
+        email: mongoUser?.userMail || "",
+        photo: mongoUser?.userPhoto || "",
+        phone: mongoUser?.userPhone || "N/A",
+        role: mongoUser?.userRole || "member",
+      },
+    };
 
     try {
-      const response = await fetch(`/api/tours/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Failed to delete tour');
-
-      alert('Tour deleted successfully!');
-      navigate('/admin/manage-tours');
+      const response = await axios.post('/api/tourPackages', newTour);
+      if (response.data.insertedId) {
+        setSubmissionStatus({ success: true, message: 'Tour created successfully!' });
+        // Reset form
+        setTourData({
+          title: '',
+          image: '',
+          type: '',
+          duration: '',
+          date: '',
+          price: '',
+          overview: '',
+          location: '',
+          from: '',
+          timing: '',
+          inclusion: [''],
+          exclusion: [''],
+          description: '',
+          additionalInfo: '',
+          travelTips: [''],
+          policy: {
+            cancellation: '',
+            reschedule: '',
+            refund: ''
+          }
+        });
+        setPhoto(null);
+      } else {
+        throw new Error('Post failed');
+      }
     } catch (error) {
-      console.error('Error deleting tour:', error);
-      alert('Error deleting tour: ' + error.message);
+      setSubmissionStatus({ success: false, message: 'Error creating tour. Please try again.' });
+      console.error('Error posting tour:', error);
     }
   };
-
-  if (isLoading && id) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {id ? 'Edit Tour Package' : 'Create New Tour Package'}
-          </h1>
-          {id && (
-            <button
-              onClick={handleDelete}
-              className="btn btn-error text-white"
-            >
-              <FaTrash className="mr-2" />
-              Delete Tour
-            </button>
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+            <h1 className="text-3xl font-bold">Create New Tour Package</h1>
+            <p className="opacity-90 mt-1">
+              Fill in the details below to add a new tour
+            </p>
+          </div>
+
+          {submissionStatus && (
+            <div className={`px-6 py-3 ${submissionStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {submissionStatus.message}
+            </div>
           )}
-        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                Basic Information
-              </h2>
-              
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Tour Title*</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={tourData.title}
-                  onChange={handleInputChange}
-                  className="input input-bordered w-full"
-                  placeholder="Saint Martin Tour"
-                  required
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Tour Type*</span>
-                </label>
-                <input
-                  type="text"
-                  name="type"
-                  value={tourData.type}
-                  onChange={handleInputChange}
-                  className="input input-bordered w-full"
-                  placeholder="Chill, Adventure, etc."
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h2>
+                
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">Duration*</span>
+                    <span className="label-text font-semibold">Tour Title*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={tourData.title}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Tour Type*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="type"
+                    value={tourData.type}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Duration*</span>
                   </label>
                   <input
                     type="text"
                     name="duration"
                     value={tourData.duration}
-                    onChange={handleInputChange}
+                    onChange={handleChange}
                     className="input input-bordered w-full"
-                    placeholder="2 Night 3 Day"
                     required
                   />
                 </div>
 
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">Date*</span>
+                    <span className="label-text font-semibold">Date*</span>
                   </label>
                   <input
                     type="text"
                     name="date"
                     value={tourData.date}
-                    onChange={handleInputChange}
+                    onChange={handleChange}
                     className="input input-bordered w-full"
-                    placeholder="20.5.23"
                     required
                   />
                 </div>
-              </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Price*</span>
-                </label>
-                <div className="relative">
-                  <FaMoneyBillWave className="absolute left-3 top-3 text-gray-400" />
-                  <input
-                    type="number"
-                    name="price"
-                    value={tourData.price}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full pl-10"
-                    placeholder="850"
-                    min="0"
-                    required
-                  />
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Price*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      name="price"
+                      value={tourData.price}
+                      onChange={handleChange}
+                      className="input input-bordered w-full pl-8"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Overview*</span>
-                </label>
-                <textarea
-                  name="overview"
-                  value={tourData.overview}
-                  onChange={handleInputChange}
-                  className="textarea textarea-bordered h-24"
-                  placeholder="Brief description of the tour"
-                  required
-                />
-              </div>
+              {/* Location Details */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Location Details</h2>
+                
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Overview*</span>
+                  </label>
+                  <textarea
+                    name="overview"
+                    value={tourData.overview}
+                    onChange={handleChange}
+                    rows="3"
+                    className="textarea textarea-bordered"
+                    required
+                  />
+                </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Location*</span>
-                </label>
-                <div className="relative">
-                  <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400" />
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Location*</span>
+                  </label>
                   <input
                     type="text"
                     name="location"
                     value={tourData.location}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full pl-10"
-                    placeholder="Saint Martin, Bangladesh"
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
                     required
                   />
                 </div>
-              </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Timing*</span>
-                </label>
-                <div className="relative">
-                  <FaClock className="absolute left-3 top-3 text-gray-400" />
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Departure From*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="from"
+                    value={tourData.from}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Timing*</span>
+                  </label>
                   <input
                     type="text"
                     name="timing"
                     value={tourData.timing}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full pl-10"
-                    placeholder="08:00 AM - 06:00 PM Daily"
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
                     required
                   />
                 </div>
               </div>
             </div>
 
-            {/* Images and Additional Info */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                Image & Additional Information
-              </h2>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Tour Image</span>
-                </label>
-                {imagePreview && (
-                  <div className="mb-4">
-                    <img
-                      src={imagePreview}
-                      alt="Tour Preview"
-                      className="w-full h-48 object-cover rounded-lg mb-2"
-                    />
-                  </div>
-                )}
-                <label className="btn btn-outline w-full">
-                  <FaImage className="mr-2" />
-                  {imagePreview ? 'Change Image' : 'Upload Image'}
+            {/* Image Upload */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Cover Photo</span>
+              </label>
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
+                    onChange={handlePhotoUpload}
+                    className="file-input file-input-bordered w-full"
                   />
-                </label>
+                </div>
+                {photo && (
+                  <div className="avatar">
+                    <div className="w-12 rounded">
+                      <img src={URL.createObjectURL(photo)} alt="Preview" />
+                    </div>
+                  </div>
+                )}
+                {!photo && tourData.image && (
+                  <div className="avatar">
+                    <div className="w-12 rounded">
+                      <img src={tourData.image} alt="Current" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Inclusions & Exclusions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-bold text-lg mb-3 flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-2 text-blue-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Inclusions
+                  </h3>
+                  {tourData.inclusion.map((item, idx) => (
+                    <div key={idx} className="flex items-center mb-2">
+                      <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
+                        {idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        className="input input-bordered flex-1"
+                        value={item}
+                        onChange={(e) => handleArrayChange(e, 'inclusion', idx)}
+                        placeholder={`Inclusion ${idx + 1}`}
+                      />
+                      {tourData.inclusion.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeArrayField('inclusion', idx)}
+                          className="btn btn-ghost btn-sm ml-2 text-red-500"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addArrayField('inclusion')}
+                    className="btn btn-ghost btn-sm mt-2 text-blue-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-1"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Add Inclusion
+                  </button>
+                </div>
               </div>
 
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-bold text-lg mb-3 flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-2 text-red-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Exclusions
+                  </h3>
+                  {tourData.exclusion.map((item, idx) => (
+                    <div key={idx} className="flex items-center mb-2">
+                      <span className="bg-red-100 text-red-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
+                        {idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        className="input input-bordered flex-1"
+                        value={item}
+                        onChange={(e) => handleArrayChange(e, 'exclusion', idx)}
+                        placeholder={`Exclusion ${idx + 1}`}
+                      />
+                      {tourData.exclusion.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeArrayField('exclusion', idx)}
+                          className="btn btn-ghost btn-sm ml-2 text-red-500"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addArrayField('exclusion')}
+                    className="btn btn-ghost btn-sm mt-2 text-red-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-1"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Add Exclusion
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Description & Additional Info */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Description*</span>
+              </label>
+              <textarea
+                name="description"
+                value={tourData.description}
+                onChange={handleChange}
+                rows="4"
+                className="textarea textarea-bordered"
+                required
+              />
+            </div>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Additional Information*</span>
+              </label>
+              <textarea
+                name="additionalInfo"
+                value={tourData.additionalInfo}
+                onChange={handleChange}
+                rows="3"
+                className="textarea textarea-bordered"
+                required
+              />
+            </div>
+
+            {/* Travel Tips */}
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <h3 className="font-bold text-lg mb-3 flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2 text-yellow-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Travel Tips
+                </h3>
+                {tourData.travelTips.map((item, idx) => (
+                  <div key={idx} className="flex items-center mb-2">
+                    <span className="bg-yellow-100 text-yellow-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
+                      {idx + 1}
+                    </span>
+                    <input
+                      type="text"
+                      className="input input-bordered flex-1"
+                      value={item}
+                      onChange={(e) => handleArrayChange(e, 'travelTips', idx)}
+                      placeholder={`Travel tip ${idx + 1}`}
+                    />
+                    {tourData.travelTips.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeArrayField('travelTips', idx)}
+                        className="btn btn-ghost btn-sm ml-2 text-red-500"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addArrayField('travelTips')}
+                  className="btn btn-ghost btn-sm mt-2 text-yellow-600"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Add Travel Tip
+                </button>
+              </div>
+            </div>
+
+            {/* Policy */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Cancellation Policy</h2>
+              
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-medium">Description*</span>
+                  <span className="label-text font-semibold">Cancellation Terms*</span>
                 </label>
-                <textarea
-                  name="description"
-                  value={tourData.description}
-                  onChange={handleInputChange}
-                  className="textarea textarea-bordered h-32"
-                  placeholder="Detailed description of the tour"
+                <input
+                  type="text"
+                  name="cancellation"
+                  value={tourData.policy.cancellation}
+                  onChange={handlePolicyChange}
+                  className="input input-bordered w-full"
                   required
                 />
               </div>
 
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-medium">Additional Information</span>
+                  <span className="label-text font-semibold">Reschedule Terms*</span>
                 </label>
-                <textarea
-                  name="additionalInfo"
-                  value={tourData.additionalInfo}
-                  onChange={handleInputChange}
-                  className="textarea textarea-bordered h-24"
-                  placeholder="Important notes for travelers"
+                <input
+                  type="text"
+                  name="reschedule"
+                  value={tourData.policy.reschedule}
+                  onChange={handlePolicyChange}
+                  className="input input-bordered w-full"
+                  required
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Refund Terms*</span>
+                </label>
+                <input
+                  type="text"
+                  name="refund"
+                  value={tourData.policy.refund}
+                  onChange={handlePolicyChange}
+                  className="input input-bordered w-full"
+                  required
                 />
               </div>
             </div>
-          </div>
 
-          {/* Inclusion Section */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">
-              What's Included
-            </h2>
-            {tourData.inclusion.map((item, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <span className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
-                  {index + 1}
-                </span>
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => handleListChange(index, e.target.value, 'inclusion')}
-                  className="input input-bordered flex-1"
-                  placeholder={`Included item ${index + 1}`}
-                />
-                {tourData.inclusion.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeListItem(index, 'inclusion')}
-                    className="btn btn-ghost btn-sm ml-2 text-red-500"
-                  >
-                    <FaMinus />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addListItem('inclusion')}
-              className="btn btn-ghost btn-sm mt-2 text-green-600"
-            >
-              <FaPlus className="mr-1" />
-              Add Inclusion
-            </button>
-          </div>
-
-          {/* Exclusion Section */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">
-              What's Not Included
-            </h2>
-            {tourData.exclusion.map((item, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <span className="bg-red-100 text-red-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
-                  {index + 1}
-                </span>
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => handleListChange(index, e.target.value, 'exclusion')}
-                  className="input input-bordered flex-1"
-                  placeholder={`Excluded item ${index + 1}`}
-                />
-                {tourData.exclusion.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeListItem(index, 'exclusion')}
-                    className="btn btn-ghost btn-sm ml-2 text-red-500"
-                  >
-                    <FaMinus />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addListItem('exclusion')}
-              className="btn btn-ghost btn-sm mt-2 text-red-600"
-            >
-              <FaPlus className="mr-1" />
-              Add Exclusion
-            </button>
-          </div>
-
-          {/* Travel Tips Section */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">
-              Travel Tips
-            </h2>
-            {tourData.travelTips.map((tip, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm font-medium">
-                  {index + 1}
-                </span>
-                <input
-                  type="text"
-                  value={tip}
-                  onChange={(e) => handleListChange(index, e.target.value, 'travelTips')}
-                  className="input input-bordered flex-1"
-                  placeholder={`Travel tip ${index + 1}`}
-                />
-                {tourData.travelTips.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeListItem(index, 'travelTips')}
-                    className="btn btn-ghost btn-sm ml-2 text-red-500"
-                  >
-                    <FaMinus />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addListItem('travelTips')}
-              className="btn btn-ghost btn-sm mt-2 text-blue-600"
-            >
-              <FaPlus className="mr-1" />
-              Add Travel Tip
-            </button>
-          </div>
-
-          {/* Policy Section */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">
-              Tour Policies
-            </h2>
-            <div className="space-y-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Cancellation Policy</span>
-                </label>
-                <div className="relative">
-                  <FaInfoCircle className="absolute left-3 top-3 text-gray-400" />
-                  <input
-                    type="text"
-                    name="cancellation"
-                    value={tourData.policy.cancellation}
-                    onChange={handlePolicyChange}
-                    className="input input-bordered w-full pl-10"
-                    placeholder="Free cancellation up to 7 days before departure"
+            {/* Submit Button */}
+            <div className="flex justify-end pt-4">
+              <button type="submit" className="btn btn-primary px-8">
+                Create Tour Package
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 ml-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
                   />
-                </div>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Reschedule Policy</span>
-                </label>
-                <div className="relative">
-                  <FaInfoCircle className="absolute left-3 top-3 text-gray-400" />
-                  <input
-                    type="text"
-                    name="reschedule"
-                    value={tourData.policy.reschedule}
-                    onChange={handlePolicyChange}
-                    className="input input-bordered w-full pl-10"
-                    placeholder="One-time reschedule allowed up to 3 days prior"
-                  />
-                </div>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Refund Policy</span>
-                </label>
-                <div className="relative">
-                  <FaInfoCircle className="absolute left-3 top-3 text-gray-400" />
-                  <input
-                    type="text"
-                    name="refund"
-                    value={tourData.policy.refund}
-                    onChange={handlePolicyChange}
-                    className="input input-bordered w-full pl-10"
-                    placeholder="Full refund if canceled within the allowed period"
-                  />
-                </div>
-              </div>
+                </svg>
+              </button>
             </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="btn btn-primary px-8"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="loading loading-spinner"></span>
-              ) : id ? (
-                'Update Tour'
-              ) : (
-                'Create Tour'
-              )}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -82,24 +82,30 @@ const GroupTour = () => {
   };
 
   const handleBookTour = async () => {
-    try {
-      const res = await axios.patch(
-        `http://localhost:5000/group-tours/${selectedTour._id}/book`,
-        {
-          slots: parseInt(person),
+    if(person > selectedTour.availableSlots) {
+      alert("Not enough slots available.");
+      return;
+    }
+    else{
+      try {
+        const res = await axios.patch(
+          `http://localhost:5000/group-tours/${selectedTour._id}/book`,
+          {
+            slots: parseInt(person),
+          }
+        );
+  
+        if (res.data.modifiedCount > 0) {
+          alert("Booking confirmed!");
+          setSelectedTour({
+            ...selectedTour,
+            availableSlots: selectedTour.availableSlots - person,
+          });
         }
-      );
-
-      if (res.data.modifiedCount > 0) {
-        alert("Booking confirmed!");
-        setSelectedTour({
-          ...selectedTour,
-          availableSlots: selectedTour.availableSlots - person,
-        });
+      } catch (err) {
+        alert("Booking failed.");
+        console.error(err);
       }
-    } catch (err) {
-      alert("Booking failed.");
-      console.error(err);
     }
   };
   return (
@@ -494,12 +500,14 @@ const GroupTour = () => {
                       className="btn btn-primary px-8"
                       onClick={handleBookTour}
                       disabled={
-                        new Date(selectedTour.departureDate) < new Date()
+                        new Date(selectedTour.departureDate) < new Date() ||
+                        selectedTour.availableSlots < 1
                       }
                     >
                       {new Date(selectedTour.departureDate) < new Date()
                         ? "Date Passed"
                         : "Book Now"}
+                        
                     </button>
                   </div>
                 </div>

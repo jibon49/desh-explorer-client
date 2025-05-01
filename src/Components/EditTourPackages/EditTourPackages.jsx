@@ -12,18 +12,49 @@ const EditTourPackage = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const fetchTours = async () => {
-      try {
-        const endpoint = tourType === 'group' ? '/group-tours' : '/tourPackages';
-        const res = await axiosSecure.get(endpoint);
-        setTours(res.data);
-      } catch (err) {
-        console.error('Failed to fetch tours', err);
-        Swal.fire('Error', 'Failed to load tours', 'error');
-      }
-    };
     fetchTours();
   }, [tourType, axiosSecure]);
+
+  const fetchTours = async () => {
+    try {
+      const endpoint = tourType === 'group' ? '/group-tours' : '/tourPackages';
+      const res = await axiosSecure.get(endpoint);
+      setTours(res.data);
+    } catch (err) {
+      console.error('Failed to fetch tours', err);
+      Swal.fire('Error', 'Failed to load tours', 'error');
+    }
+  };
+
+  const handleDeleteTour = async (tourId) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        const endpoint = tourType === 'group' 
+          ? `/group-tours/${tourId}`
+          : `/tourPackages/${tourId}`;
+        
+        const res = await axiosSecure.delete(endpoint);
+        
+        if (res.data.deletedCount > 0) {
+          Swal.fire('Deleted!', 'Tour package has been deleted.', 'success');
+          fetchTours();
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete tour', err);
+      Swal.fire('Error', 'Failed to delete tour', 'error');
+    }
+  };
 
   const handleEditClick = (tour) => {
     setEditingTour(tour);
@@ -62,7 +93,6 @@ const EditTourPackage = () => {
         ? `/group-tours/update/${editingTour._id}`
         : `/tourPackages/update/${editingTour._id}`;
   
-      // Create a clean copy of formData excluding _id and createdBy
       const { _id, createdBy, ...cleanData } = formData;
   
       const res = await axiosSecure.patch(endpoint, cleanData);
@@ -70,15 +100,13 @@ const EditTourPackage = () => {
       if (res.data.modifiedCount > 0 || res.data.acknowledged) {
         Swal.fire('Success', 'Tour updated successfully', 'success');
         setShowModal(false);
-        const updatedRes = await axiosSecure.get(tourType === 'group' ? '/group-tours' : '/tourPackages');
-        setTours(updatedRes.data);
+        fetchTours();
       }
     } catch (err) {
       console.error('Failed to update tour', err);
       Swal.fire('Error', err.response?.data?.error || 'Failed to update tour', 'error');
     }
   };
-  
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -123,12 +151,20 @@ const EditTourPackage = () => {
                     : tour.duration}
                 </td>
                 <td>
-                  <button 
-                    onClick={() => handleEditClick(tour)}
-                    className="btn btn-sm btn-primary gap-1"
-                  >
-                    <FaEdit /> Edit
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleEditClick(tour)}
+                      className="btn btn-sm btn-primary gap-1"
+                    >
+                      <FaEdit /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTour(tour._id)}
+                      className="btn btn-sm btn-error gap-1"
+                    >
+                      <FaTrash /> Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
