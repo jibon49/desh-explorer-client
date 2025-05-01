@@ -111,7 +111,9 @@ const CustomTour = () => {
     }
 
     const bookingData = {
-      userEmail: mongoUser?.userMail,
+      creatorEmail: mongoUser?.userMail,
+      creatorName: mongoUser?.userName,
+      creatorPhone: mongoUser?.userPhone,
       fromLocation,
       toLocation,
       travelDate: leaveDate,
