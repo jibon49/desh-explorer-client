@@ -222,19 +222,7 @@ const GroupTravelPostForm = () => {
                 </div>
               </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">Map Link*</span>
-                </label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="https://maps.google.com/..."
-                  value={mapLink}
-                  onChange={(e) => setMapLink(e.target.value)}
-                  required
-                />
-              </div>
+           
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Departure Date */}
                 <div className="form-control">
