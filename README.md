@@ -1,12 +1,74 @@
-# React + Vite
+Desh Explorer Client
+A React + Vite project scaffolded for rapid development with Hot Module Replacement (HMR) and ESLint integration.​
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Features
+⚡ Vite for fast builds and development server
 
-Currently, two official plugins are available:
+⚛️ React with support for Fast Refresh
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🧹 ESLint configured for code quality
 
-## Expanding the ESLint configuration
+📁 Organized project structure with src and public directories​
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Getting Started
+Prerequisites
+Node.js (version 14 or higher)
+
+npm or Yarn​
+
+Installation
+Clone the repository:​
+
+bash
+Copy
+Edit
+git clone https://github.com/jibon49/desh-explorer-client.git
+Navigate to the project directory:​
+
+bash
+Copy
+Edit
+cd desh-explorer-client
+Install dependencies:​
+
+bash
+Copy
+Edit
+npm install
+# or
+yarn install
+Running the Development Server
+bash
+Copy
+Edit
+npm run dev
+# or
+yarn dev
+The application will be available at http://localhost:5173/ by default.​
+
+Building for Production
+bash
+Copy
+Edit
+npm run build
+# or
+yarn build
+The optimized production build will be in the dist folder.​
+
+Project Structure
+plaintext
+Copy
+Edit
+desh-explorer-client/
+├── public/             # Static assets
+├── src/                # Source code
+├── .gitignore
+├── index.html
+├── package.json
+├── vite.config.js
+└── README.md
+Contributing
+Contributions are welcome! Please fork the repository and submit a pull request.​
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
