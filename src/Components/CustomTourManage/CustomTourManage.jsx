@@ -217,26 +217,17 @@ const CustomTourManage = () => {
                     required={!formData.image}
                   />
                 </div>
-                {(formData.image || imageFile) && (
-                  <div className="mt-4 transition-all duration-300">
-                    <div className="label">
-                      <span className="label-text font-medium text-gray-700">
-                        Image Preview
-                      </span>
-                    </div>
-                    <div className="relative group">
-                      <img
-                        src={formData.image}
-                        alt="Preview"
-                        className="rounded-lg border-2 border-gray-200 object-cover h-48 w-full transition-all duration-300 group-hover:opacity-90"
-                        onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/400x200?text=Image+Not+Found";
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg"></div>
-                    </div>
-                  </div>
+                {formData.image && formData.image.trim() !== "" && (
+                  <img
+                    src={formData.image}
+                    alt="Preview"
+                    className="rounded-lg border-2 border-gray-200 object-cover h-48 w-full transition-all duration-300 group-hover:opacity-90"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                    }}
+                  />
                 )}
               </div>
 
