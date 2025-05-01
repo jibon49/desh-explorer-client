@@ -335,6 +335,7 @@ const CustomTourBooking = () => {
                       <p><strong>Name:</strong> {selectedBooking.creatorName || 'N/A'}</p>
                       <p><strong>Email:</strong> {selectedBooking.creatorEmail || 'N/A'}</p>
                       <p><strong>Booking Date:</strong> {formatDate(selectedBooking.createdAt)}</p>
+                      <p><strong>Phone Number:</strong>{selectedBooking.creatorPhone || 'N/A'}</p>
                     </div>
                   </motion.div>
 
