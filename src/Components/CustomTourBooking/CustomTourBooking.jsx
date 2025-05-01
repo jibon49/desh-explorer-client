@@ -7,6 +7,7 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 const CustomTourBooking = () => {
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [newStatus, setNewStatus] = useState(""); // new state for booking status update
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const axiosSecure = useAxiosSecure();
@@ -31,9 +32,15 @@ const CustomTourBooking = () => {
         setIsLoading(false);
       }
     };
-
     fetchBookings();
   }, [axiosSecure]);
+
+  // Set newStatus when booking is selected
+  useEffect(() => {
+    if (selectedBooking) {
+      setNewStatus(selectedBooking.status);
+    }
+  }, [selectedBooking]);
 
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
@@ -76,6 +83,32 @@ const CustomTourBooking = () => {
           color: '#1f2937',
         });
       }
+    }
+  };
+
+  const handleChangeStatus = async () => {
+    try {
+      await axiosSecure.put(`/api/custom-bookings/${selectedBooking._id}/status`, { status: newStatus });
+      Swal.fire({
+        title: 'Success!',
+        text: 'Booking status updated successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        background: '#fff',
+        color: '#1f2937',
+      });
+      setSelectedBooking({ ...selectedBooking, status: newStatus });
+      setBookings(bookings.map(b => b._id === selectedBooking._id ? { ...b, status: newStatus } : b));
+    } catch (error) {
+      console.error('Error updating status:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: error.response?.data?.message || 'Failed to update status',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        background: '#fff',
+        color: '#1f2937',
+      });
     }
   };
 
@@ -263,7 +296,7 @@ const CustomTourBooking = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-4"
+            className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-xl z-50 p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -358,7 +391,7 @@ const CustomTourBooking = () => {
                     </div>
                   </motion.div>
 
-                  {/* Rental Details */}
+                  {/* Vehicle Rental */}
                   <motion.div 
                     whileHover={{ y: -5 }}
                     className="bg-red-50 p-5 rounded-lg border border-red-100"
@@ -374,7 +407,7 @@ const CustomTourBooking = () => {
                     </div>
                   </motion.div>
 
-                  {/* Summary */}
+                  {/* Booking Summary */}
                   <motion.div 
                     whileHover={{ y: -5 }}
                     className="bg-indigo-50 p-5 rounded-lg border border-indigo-100 md:col-span-2"
@@ -402,6 +435,30 @@ const CustomTourBooking = () => {
                       </div>
                     </div>
                   </motion.div>
+                </div>
+
+                {/* Status Change Section */}
+                <div className="mt-6 border-t pt-4">
+                  <h4 className="text-lg font-bold mb-2">Change Booking Status</h4>
+                  <div className="flex items-center space-x-4">
+                    <select
+                      value={newStatus}
+                      onChange={(e) => setNewStatus(e.target.value)}
+                      className="p-2 border border-gray-300 rounded"
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="canceled">Canceled</option>
+                      <option value="hold">Hold</option>
+                    </select>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleChangeStatus}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                    >
+                      Update Status
+                    </motion.button>
+                  </div>
                 </div>
 
                 <div className="mt-6 flex justify-end">
