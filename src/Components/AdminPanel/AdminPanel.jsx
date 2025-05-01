@@ -8,6 +8,7 @@ import BookingList from "../BookingList/BookingList";
 import { TbBrandBooking } from "react-icons/tb";
 import { MdOutlineTour } from "react-icons/md";
 import CustomTourManage from "../CustomTourManage/CustomTourManage";
+import CustomTourBooking from "../CustomTourBooking/CustomTourBooking";
 const AdminPanel = () => {
   const [selectedOption, setSelectedOption] = useState("manageUsers");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,6 +25,8 @@ const AdminPanel = () => {
         return <BookingList/>;
       case "customToursManage":
         return <CustomTourManage />;
+      case "CustomTourBooking":
+        return <CustomTourBooking />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -65,6 +68,11 @@ const AdminPanel = () => {
       id: "customToursManage",
       label: "Custom Tour Packages Managment",
       icon: <MdOutlineTour className="mr-3" />,
+    },
+    {
+      id: "CustomTourBooking",
+      label: "Custom Tour Booking",
+      icon: <TbBrandBooking className="mr-3" />,
     },
   ];
 
