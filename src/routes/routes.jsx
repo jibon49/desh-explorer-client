@@ -14,6 +14,8 @@ import GroupTour from "../pages/GroupTour/GroupTour";
 import ComplainForm from "../pages/ComplainForm/ComplainForm";
 import BlogsReview from "../pages/BlogsReview/BlogsReview";
 import AboutUs from "../pages/AboutUs/AboutUs";
+import Payments from "../pages/Payments/Payments";
+import CheckOut from "../pages/Payments/CheckOut";
 
   export const router = createBrowserRouter([
     {
@@ -63,7 +65,11 @@ import AboutUs from "../pages/AboutUs/AboutUs";
         {
           path:"aboutus",
           element:<AboutUs></AboutUs>
-        }
+        },
+        {
+          path:"checkout",
+          element:<CheckOut></CheckOut>
+        },
       ]
     },
   ]);

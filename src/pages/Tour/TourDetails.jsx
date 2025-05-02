@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Banner from "../Home/Banner/Banner";
 import {
@@ -20,8 +20,7 @@ import {
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
-  const [travelers, setTravelers] = useState(1); // new state for number of travelers
-
+  const [travelers, setTravelers] = useState(1);
   useEffect(() => {
     axios
       .get(`http://localhost:5000/tourDetails/${id}`)
@@ -394,12 +393,14 @@ const TourDetails = () => {
                   </span>
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn btn-primary w-full py-3 text-lg font-medium shadow-md hover:shadow-lg transition-all"
-                >
-                  Book Now
-                </button>
+                <Link to="/checkout">
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-full py-3 text-lg font-medium shadow-md hover:shadow-lg transition-all"
+                  >
+                    Book Now
+                  </button>
+                </Link>
               </form>
 
               <div className="text-center text-sm text-gray-500 mt-4">
