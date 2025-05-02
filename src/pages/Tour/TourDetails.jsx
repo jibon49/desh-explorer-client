@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Banner from "../Home/Banner/Banner";
@@ -16,11 +16,13 @@ import {
   FiSun,
   FiX,
 } from "react-icons/fi";
+import { AuthContext } from "../../Authproviders/AuthProviders";
 
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
   const [travelers, setTravelers] = useState(1);
+  const {user}=useContext(AuthContext)
   useEffect(() => {
     axios
       .get(`http://localhost:5000/tourDetails/${id}`)
@@ -393,7 +395,15 @@ const TourDetails = () => {
                   </span>
                 </div>
 
-                <Link to="/checkout">
+                <Link
+                  to="/checkout"
+                  state={{
+                    totalPrice: tour.price * travelers,
+                    tourId: tour._id,
+                    userName: user?.displayName || "Anonymous",
+                    userEmail: user?.email || "anonymous",
+                  }}
+                >
                   <button
                     type="submit"
                     className="btn btn-primary w-full py-3 text-lg font-medium shadow-md hover:shadow-lg transition-all"
