@@ -83,13 +83,7 @@ const Banner = ({ bgImage, heading, text }) => {
             >
               {text}
             </motion.p>
-            
-            {/* Optional CTA Button with Animation */}
-            <motion.div variants={itemVariants}>
-              <button className="mt-6 px-8 py-3 bg-white text-black font-semibold rounded-full hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
-                Learn More
-              </button>
-            </motion.div>
+
           </div>
         </motion.div>
 
