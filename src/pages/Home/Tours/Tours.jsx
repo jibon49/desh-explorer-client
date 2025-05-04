@@ -8,7 +8,7 @@ const Tour = () => {
   const [where, setWhere] = useState("");
   const [leaveDate, setLeaveDate] = useState("20 Jun 2025");
   const [returnDate, setReturnDate] = useState("25 Jun 2025");
-  const [showDatePicker, setShowDatePicker] = useState(null); // 'leave' or 'return'
+  const [showDatePicker, setShowDatePicker] = useState(null);
 
   // Date picker functionality
   const handleDateChange = (dateType, daysToAdd) => {
@@ -28,10 +28,7 @@ const Tour = () => {
     setShowDatePicker(null);
   };
 
-  // Search functionality
-  const handleSearch = () => {
-    Navigate(`/tour`);
-  };
+ 
       
 
   // Animation variants
@@ -194,10 +191,11 @@ const Tour = () => {
             >
               <motion.button
                 className="bg-site-main text-white px-6 py-3 rounded-full flex items-center"
-                onClick={handleSearch}
+                onClick={() => Navigate("/tour")}
                 variants={buttonVariants}
                 whileHover="hover"
                 whileTap="tap"
+
               >
                 <FaSearch className="mr-2" />
                 Search {selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)}
