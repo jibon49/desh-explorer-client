@@ -1,76 +1,137 @@
 import React, { useState, useEffect } from 'react';
-import {
-    FaEye, FaTimes, FaCheck, FaClock, FaCalendarAlt, FaUser, FaEnvelope,
-    FaPhone, FaUsers, FaMoneyBillWave, FaComment, FaSave
+import { 
+  FaEye, FaTimes, FaCheck, FaClock, FaCalendarAlt, FaUser, 
+  FaEnvelope, FaPhone, FaUsers, FaMapMarkerAlt, FaStar, 
+  FaTrash, FaEdit, FaUserFriends, FaFileExport, FaSearch 
 } from 'react-icons/fa';
+import axios from "axios";
+import useMongoUser from '../../hooks/userMongoUser';
 
-const BookingList = () => {
+const MyTours = () => {
+    const [tours, setTours] = useState([]);
+    const [selectedTour, setSelectedTour] = useState(null);
     const [bookings, setBookings] = useState([]);
-    const [selectedBooking, setSelectedBooking] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [loadingBookings, setLoadingBookings] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const { mongoUser } = useMongoUser();
 
     useEffect(() => {
-        fetch('/booking.json')
-            .then((response) => response.json())
-            .then((data) => {
-                setBookings(data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error fetching booking data:', error);
-                setLoading(false);
-            });
-    }, []);
+        const fetchTours = async () => {
+            try {
+                if (!mongoUser?.userMail) {
+                    setLoading(false);
+                    return;
+                }
 
-    const updateBookingStatus = (bookingId, newStatus) => {
-        setBookings(bookings.map(booking =>
-            booking.transactionId === bookingId
-                ? { ...booking, status: newStatus }
-                : booking
-        ));
-    };
-
-    const saveBookingStatus = async (bookingId, newStatus) => {
-        try {
-            const response = await fetch(`/api/bookings/${bookingId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-            if (!response.ok) {
-                throw new Error('Database update failed');
+                const response = await axios.get(
+                    `http://localhost:5000/group-tours/user/${mongoUser.userMail}`
+                );
+                
+                if (response.data && Array.isArray(response.data)) {
+                    setTours(response.data);
+                } else {
+                    setTours([]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch group tours:", err);
+                setError("Failed to load tours. Please try again later.");
+            } finally {
+                setLoading(false);
             }
-            console.log('Booking status saved successfully');
-        } catch (error) {
-            console.error('Error updating booking status in database:', error);
+        };
+
+        fetchTours();
+    }, [mongoUser?.userMail]);
+
+    const deleteTour = async (tourId) => {
+        try {
+            await axios.delete(`http://localhost:5000/group-tours/${tourId}`);
+            setTours(prev => prev.filter(tour => tour._id !== tourId));
+            setSelectedTour(null);
+        } catch (err) {
+            console.error("Failed to delete tour:", err);
+            setError("Failed to delete tour. Please try again.");
         }
     };
+
+    const fetchBookings = async (tourId) => {
+        setLoadingBookings(true);
+        try {
+            const response = await axios.get(
+                `http://localhost:5000/payments/tour/${tourId}`
+            );
+            setBookings(response.data);
+        } catch (err) {
+            console.error("Failed to fetch bookings:", err);
+            setError("Failed to load bookings. Please try again later.");
+        } finally {
+            setLoadingBookings(false);
+        }
+    };
+
+    const handleViewTour = async (tour) => {
+        setSelectedTour(tour);
+        await fetchBookings(tour._id);
+    };
+
+    const exportBookings = () => {
+        const csvContent = [
+            ['Email', 'Amount', 'Status', 'Booking Date'],
+            ...bookings.map(booking => [
+                booking.customer_email,
+                `$${booking.amount}`,
+                booking.status,
+                new Date(booking.createdAt).toLocaleDateString()
+            ])
+        ].map(e => e.join(",")).join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${selectedTour.title}_bookings.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const filteredBookings = bookings.filter(booking => 
+        booking.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.status.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const getStatusBadge = (status) => {
-        switch (status.toLowerCase()) {
-            case 'confirmed':
-                return <span className="badge badge-success gap-2"><FaCheck /> Confirmed</span>;
-            case 'pending':
-                return <span className="badge badge-warning gap-2"><FaClock /> Pending</span>;
-            case 'cancelled':
-                return <span className="badge badge-error gap-2"><FaTimes /> Cancelled</span>;
-            default:
-                return <span className="badge badge-info gap-2">{status}</span>;
+        switch (status?.toLowerCase()) {
+            case 'active': return <span className="badge badge-success gap-2"><FaCheck /> Active</span>;
+            case 'completed': return <span className="badge badge-info gap-2"><FaCheck /> Completed</span>;
+            case 'cancelled': return <span className="badge badge-error gap-2"><FaTimes /> Cancelled</span>;
+            default: return <span className="badge badge-warning gap-2"><FaClock /> Upcoming</span>;
         }
     };
 
-    const groupTourBookings = bookings.filter(
-        (booking) => booking.tourType?.toLowerCase() === 'group'
-    );
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
 
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="flex flex-col items-center">
                     <span className="loading loading-spinner loading-lg text-primary mb-4"></span>
-                    <p>Loading bookings...</p>
+                    <p>Loading your group tours...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="alert alert-error max-w-md">
+                    <span>{error}</span>
                 </div>
             </div>
         );
@@ -82,63 +143,66 @@ const BookingList = () => {
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
                     <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                        <FaCalendarAlt className="text-xl" />
-                        Group Tour Bookings
+                        <FaUsers className="text-xl" />
+                        My Organized Group Tours
                     </h2>
-                    <p className="text-blue-100 mt-1">View and manage group tour bookings only</p>
+                    <p className="text-blue-100 mt-1">
+                        {tours.length} {tours.length === 1 ? 'tour' : 'tours'} created by you
+                    </p>
                 </div>
 
-                {/* Booking Table */}
+                {/* Tours Table */}
                 <div className="overflow-x-auto p-4">
                     <table className="table w-full">
                         <thead>
                             <tr className="bg-gray-50">
-                                <th className="font-semibold text-gray-700">Transaction ID</th>
-                                <th className="font-semibold text-gray-700">Tour</th>
-                                <th className="font-semibold text-gray-700">Customer</th>
-                                <th className="font-semibold text-gray-700">Travel Date</th>
-                                <th className="font-semibold text-gray-700">Status</th>
-                                <th className="font-semibold text-gray-700 text-right">Actions</th>
+                                <th>Tour Title</th>
+                                <th>Route</th>
+                                <th>Dates</th>
+                                <th>Price</th>
+                                <th>Slots</th>
+                                <th>Status</th>
+                                <th className="text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {groupTourBookings.length > 0 ? (
-                                groupTourBookings.map((booking) => (
-                                    <tr key={booking.transactionId} className="hover:bg-gray-50">
-                                        <td className="font-medium text-gray-800">{booking.transactionId}</td>
-                                        <td className="text-gray-600">{booking.tourTitle}</td>
-                                        <td className="text-gray-600">
-                                            {booking.customer.firstName} {booking.customer.lastName}
-                                        </td>
-                                        <td className="text-gray-600">{booking.travelDate}</td>
+                            {tours.length > 0 ? (
+                                tours.map((tour) => (
+                                    <tr key={tour._id} className="hover:bg-gray-50">
+                                        <td className="font-medium">{tour.title}</td>
                                         <td>
-                                            <select
-                                                value={booking.status}
-                                                onChange={(e) => updateBookingStatus(booking.transactionId, e.target.value)}
-                                                className={`select select-bordered select-sm max-w-xs ${
-                                                    booking.status === 'Confirmed' ? 'bg-green-50 text-green-700' :
-                                                    booking.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' :
-                                                    'bg-red-50 text-red-700'
-                                                }`}
-                                            >
-                                                <option value="Pending">Pending</option>
-                                                <option value="Confirmed">Confirmed</option>
-                                                <option value="Cancelled">Cancelled</option>
-                                            </select>
+                                            <div className="flex items-center gap-1">
+                                                <FaMapMarkerAlt className="text-xs text-blue-500" />
+                                                {tour.from} → {tour.to}
+                                            </div>
                                         </td>
+                                        <td>
+                                            <div className="flex flex-col">
+                                                <span>{formatDate(tour.departureDate)}</span>
+                                                <span className="text-xs text-gray-400">to {formatDate(tour.returnDate)}</span>
+                                            </div>
+                                        </td>
+                                        <td>${tour.price}</td>
+                                        <td>
+                                            <div className="flex items-center gap-1">
+                                                <FaUsers className="text-blue-500" />
+                                                {tour.availableSlots}
+                                            </div>
+                                        </td>
+                                        <td>{getStatusBadge(tour.status)}</td>
                                         <td className="text-right">
                                             <div className="flex gap-2 justify-end">
                                                 <button
-                                                    onClick={() => saveBookingStatus(booking.transactionId, booking.status)}
-                                                    className="btn btn-sm btn-success gap-2"
+                                                    onClick={() => handleViewTour(tour)}
+                                                    className="btn btn-sm btn-outline btn-primary gap-1"
                                                 >
-                                                    <FaSave /> Save
+                                                    <FaEye /> View
                                                 </button>
                                                 <button
-                                                    onClick={() => setSelectedBooking(booking)}
-                                                    className="btn btn-sm btn-outline btn-primary gap-2"
+                                                    onClick={() => deleteTour(tour._id)}
+                                                    className="btn btn-sm btn-outline btn-error gap-1"
                                                 >
-                                                    <FaEye /> Details
+                                                    <FaTrash /> Delete
                                                 </button>
                                             </div>
                                         </td>
@@ -146,36 +210,31 @@ const BookingList = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-8 text-gray-500">
-                                        No group tour bookings found
+                                    <td colSpan="7" className="text-center py-8 text-gray-500">
+                                        You haven't created any group tours yet
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-
-                {/* Stats Footer */}
-                <div className="bg-gray-50 p-4 border-t border-gray-200">
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                        <div>
-                            Showing <span className="font-medium">{groupTourBookings.length}</span> group tour bookings
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            {/* Booking Details Modal */}
-            {selectedBooking && (
+            {/* Tour Details Modal */}
+            {selectedTour && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-md z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
                         <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex justify-between items-center">
                             <h3 className="text-xl font-bold flex items-center gap-2">
                                 <FaCalendarAlt />
-                                Booking Details
+                                Tour Details: {selectedTour.title}
                             </h3>
                             <button
-                                onClick={() => setSelectedBooking(null)}
+                                onClick={() => {
+                                    setSelectedTour(null);
+                                    setBookings([]);
+                                    setSearchTerm('');
+                                }}
                                 className="btn btn-circle btn-sm"
                             >
                                 <FaTimes />
@@ -184,92 +243,165 @@ const BookingList = () => {
 
                         <div className="p-6">
                             {/* Tour Image */}
-                            <img
-                                src={selectedBooking.tourImage}
-                                alt={selectedBooking.tourTitle}
-                                className="w-full h-48 object-cover rounded-lg mb-6"
-                            />
+                            <div className="relative">
+                                <img
+                                    src={selectedTour.profileImage}
+                                    alt={selectedTour.title}
+                                    className="w-full h-64 object-cover rounded-lg mb-6"
+                                />
+                                <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/70 text-white px-3 py-1 rounded-full">
+                                    <FaStar className="text-yellow-400" />
+                                    <span>{selectedTour.rating || 'New'}</span>
+                                </div>
+                            </div>
 
-                            {/* Booking Info */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Tour Info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                {/* Left Column */}
                                 <div className="space-y-4">
                                     <div>
                                         <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                            <FaCalendarAlt /> Booking Information
+                                            <FaCalendarAlt /> Tour Information
                                         </h4>
                                         <div className="space-y-2 text-sm">
-                                            <p><span className="font-medium">Transaction ID:</span> {selectedBooking.transactionId}</p>
-                                            <p><span className="font-medium">Tour:</span> {selectedBooking.tourTitle}</p>
-                                            <p><span className="font-medium">Tour Type:</span> {selectedBooking.tourType}</p>
-                                            <p><span className="font-medium">Travel Date:</span> {selectedBooking.travelDate}</p>
-                                            <p><span className="font-medium">Booking Date:</span> {new Date(selectedBooking.bookingDate).toLocaleDateString()}</p>
+                                            <p><span className="font-medium">Title:</span> {selectedTour.title}</p>
+                                            <p>
+                                                <span className="font-medium">Route:</span> 
+                                                <span className="flex items-center gap-1 ml-1">
+                                                    <FaMapMarkerAlt className="text-xs text-blue-500" />
+                                                    {selectedTour.from} → {selectedTour.to}
+                                                </span>
+                                            </p>
+                                            <p><span className="font-medium">Organizer:</span> {selectedTour.organizer}</p>
+                                            <p><span className="font-medium">Price:</span> ${selectedTour.price}</p>
+                                            <p><span className="font-medium">Available Slots:</span> {selectedTour.availableSlots}</p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                            <FaUser /> Organizer Details
+                                        </h4>
+                                        <div className="space-y-2 text-sm">
+                                            <p><span className="font-medium">Name:</span> {selectedTour.createdBy?.name}</p>
+                                            <p className="flex items-center gap-2">
+                                                <FaEnvelope /> 
+                                                <span className="font-medium">Email:</span> {selectedTour.createdBy?.email}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <FaPhone /> 
+                                                <span className="font-medium">Phone:</span> {selectedTour.createdBy?.phone}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Column */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                            <FaCalendarAlt /> Schedule
+                                        </h4>
+                                        <div className="space-y-2 text-sm">
+                                            <p><span className="font-medium">Departure:</span> {formatDate(selectedTour.departureDate)}</p>
+                                            <p><span className="font-medium">Return:</span> {formatDate(selectedTour.returnDate)}</p>
                                             <p className="flex items-center gap-2">
                                                 <span className="font-medium">Status:</span>
-                                                {getStatusBadge(selectedBooking.status)}
+                                                {getStatusBadge(selectedTour.status)}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                            <FaUser /> Customer Details
-                                        </h4>
-                                        <div className="space-y-2 text-sm">
-                                            <p><span className="font-medium">Name:</span> {selectedBooking.customer.firstName} {selectedBooking.customer.lastName}</p>
-                                            <p className="flex items-center gap-2"><FaEnvelope /> <span className="font-medium">Email:</span> {selectedBooking.customer.email}</p>
-                                            <p className="flex items-center gap-2"><FaPhone /> <span className="font-medium">Phone:</span> {selectedBooking.customer.phone}</p>
+                                        <h4 className="font-semibold text-gray-700 mb-2">Tour Details</h4>
+                                        <div className="text-sm bg-gray-50 p-3 rounded-lg">
+                                            {selectedTour.details}
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                            <FaUsers /> Travel Details
-                                        </h4>
-                                        <div className="space-y-2 text-sm">
-                                            <p><span className="font-medium">Number of Travelers:</span> {selectedBooking.numberOfTravelers}</p>
-                                            <p className="flex items-center gap-2"><FaMoneyBillWave /> <span className="font-medium">Price per Person:</span> ${selectedBooking.pricePerPerson}</p>
-                                            <p className="flex items-center gap-2"><FaMoneyBillWave /> <span className="font-medium">Total Price:</span> ${selectedBooking.totalPrice}</p>
-                                        </div>
-                                    </div>
-
-                                    {selectedBooking.specialRequests && (
-                                        <div>
-                                            <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                                <FaComment /> Special Requests
-                                            </h4>
-                                            <div className="text-sm bg-gray-50 p-3 rounded-lg">
-                                                {selectedBooking.specialRequests}
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
-                            {/* Status Update */}
-                            <div className="mt-6 gap-2 flex items-center justify-between">
-                                <h4 className="font-semibold text-gray-700 mb-2">Update Booking Status</h4>
-                                <select
-                                    value={selectedBooking.status}
-                                    onChange={(e) => {
-                                        updateBookingStatus(selectedBooking.transactionId, e.target.value);
-                                        setSelectedBooking({
-                                            ...selectedBooking,
-                                            status: e.target.value
-                                        });
-                                    }}
-                                    className="select select-bordered w-full max-w-xs"
-                                >
-                                    <option value="Pending">Pending</option>
-                                    <option value="Confirmed">Confirmed</option>
-                                    <option value="Cancelled">Cancelled</option>
-                                </select>
+                            {/* Bookings Section */}
+                            <div className="mt-8 border-t pt-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h4 className="text-lg font-semibold flex items-center gap-2">
+                                        <FaUserFriends /> Bookings ({bookings.length})
+                                    </h4>
+                                    <div className="flex gap-2">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Search bookings..."
+                                                className="input input-bordered input-sm pl-8"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
+                                            <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
+                                        </div>
+                                        <button 
+                                            onClick={exportBookings}
+                                            className="btn btn-sm btn-outline gap-2"
+                                        >
+                                            <FaFileExport /> Export
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {loadingBookings ? (
+                                    <div className="flex justify-center py-8">
+                                        <span className="loading loading-spinner text-primary"></span>
+                                    </div>
+                                ) : filteredBookings.length > 0 ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="table w-full">
+                                            <thead>
+                                                <tr className="bg-gray-50">
+                                                    <th>Customer Email</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Booking Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredBookings.map((booking) => (
+                                                    <tr key={booking._id} className="hover:bg-gray-50">
+                                                        <td className="font-medium">{booking.customer_email}</td>
+                                                        <td>${booking.amount}</td>
+                                                        <td>
+                                                            <span className={`badge ${
+                                                                booking.status === 'completed' ? 'badge-success' :
+                                                                booking.status === 'initiated' ? 'badge-warning' :
+                                                                'badge-error'
+                                                            }`}>
+                                                                {booking.status}
+                                                            </span>
+                                                        </td>
+                                                        <td>{formatDate(booking.createdAt)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="alert alert-info">
+                                        <span>No bookings found {searchTerm ? 'matching your search' : 'for this tour'}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="mt-8 flex justify-end gap-3">
                                 <button
-                                    onClick={() => saveBookingStatus(selectedBooking.transactionId, selectedBooking.status)}
-                                    className="btn btn-sm btn-success gap-2"
+                                    className="btn btn-outline btn-error gap-2"
+                                    onClick={() => {
+                                        deleteTour(selectedTour._id);
+                                        setSelectedTour(null);
+                                    }}
                                 >
-                                    <FaSave /> Save
+                                    <FaTrash /> Delete Tour
+                                </button>
+                                <button className="btn btn-primary gap-2">
+                                    <FaEdit /> Edit Tour
                                 </button>
                             </div>
                         </div>
@@ -280,4 +412,4 @@ const BookingList = () => {
     );
 };
 
-export default BookingList;
+export default MyTours;
