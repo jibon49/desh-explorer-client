@@ -183,7 +183,7 @@ const GroupTour = () => {
             >
               <div className="relative">
                 <img
-                  src={tour.profileImage}
+                  src={tour.images[0]}
                   alt={tour.title}
                   className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
                 />
