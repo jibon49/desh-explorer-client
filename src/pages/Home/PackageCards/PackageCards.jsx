@@ -30,7 +30,8 @@ const PackageCards = () => {
               <div>{pkg.date}</div>
               <div className="flex flex-row items-center mt-2 justify-around">
                 <p className="font-bold text-xl">${pkg.price}/person</p>
-                <button className="btn bg-site-main text-white ml-20 rounded-2xl">
+                <button className="btn bg-site-main text-white ml-20 rounded-2xl"
+                        onClick={() => navigate("/tour")}>
                   Book now
                 </button>
               </div>
