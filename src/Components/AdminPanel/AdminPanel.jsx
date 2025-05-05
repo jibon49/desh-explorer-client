@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiUsers, FiPackage, FiMenu, FiX } from "react-icons/fi";
+import { FiUsers, FiPackage, FiMenu, FiX, FiCalendar } from "react-icons/fi";
 import { IoAddOutline } from "react-icons/io5";
 import EditTourPackages from "../EditTourPackages/EditTourPackages";
 import ManageUsers from "../ManageUsers/ManageUsers";
@@ -9,6 +9,7 @@ import { TbBrandBooking } from "react-icons/tb";
 import { MdOutlineTour } from "react-icons/md";
 import CustomTourManage from "../CustomTourManage/CustomTourManage";
 import CustomTourBooking from "../CustomTourBooking/CustomTourBooking";
+import MyBookings from "../userPanel/MyBookings";
 const AdminPanel = () => {
   const [selectedOption, setSelectedOption] = useState("manageUsers");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,6 +28,8 @@ const AdminPanel = () => {
         return <CustomTourManage />;
       case "CustomTourBooking":
         return <CustomTourBooking />;
+      case "myBookings":
+        return <MyBookings/>;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -66,13 +69,18 @@ const AdminPanel = () => {
     },
     {
       id: "customToursManage",
-      label: "Custom Tour Packages Managment",
+      label: "Add Hotel",
       icon: <MdOutlineTour className="mr-3" />,
     },
     {
       id: "CustomTourBooking",
       label: "Custom Tour Booking",
       icon: <TbBrandBooking className="mr-3" />,
+    },
+    {
+      id: "myBookings",
+      label: "My Bookings",
+      icon: <FiCalendar className="mr-3" />,
     },
   ];
 
