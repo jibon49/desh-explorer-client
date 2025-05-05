@@ -114,6 +114,7 @@ const TourDetails = () => {
             {/* <p className="font-semibold mt-2 text-xl">The ID of this tour package is:</p>
             <p className="text-base text-red-500">{tour._id}</p> */}
             {/* <button className="btn btn-neutral btn-sm mt-4">Book Now</button> */}
+            <p className="text-sm text-gray-700">Id of this tour package is: <span>{tour._id}</span></p>
           </div>
         </div>
 

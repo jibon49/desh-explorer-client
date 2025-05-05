@@ -10,9 +10,9 @@ import {
   FiImage,
   FiZap,
   FiAlertTriangle,
+  FiSearch,
 } from "react-icons/fi";
 import { HiCheckBadge } from "react-icons/hi2";
-
 import {
   FaStar,
   FaMapMarkerAlt,
@@ -24,25 +24,56 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import useMongoUser from "../../hooks/userMongoUser";
+import { Link } from "react-router-dom";
 
 const GroupTour = () => {
   const [fromLocation, setFromLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTour, setSelectedTour] = useState(null);
   const [tourPackages, setTourPackages] = useState([]);
+  const [filteredPackages, setFilteredPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const { mongoUser, load, error } = useMongoUser();
   const [person, setPerson] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const itemsPerPage = 3;
   const locations = Array.from(new Set(tourPackages.map((tour) => tour.from)));
-  const filteredPackages = fromLocation
-    ? tourPackages.filter((tour) => tour.from === fromLocation)
-    : tourPackages;
+
+  useEffect(() => {
+    filterTours();
+  }, [searchTerm, fromLocation, tourPackages]);
+
+  const filterTours = () => {
+    let filtered = [...tourPackages];
+
+    // Apply location filter
+    if (fromLocation) {
+      filtered = filtered.filter((tour) => tour.from === fromLocation);
+    }
+
+    // Apply search term filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (tour) =>
+          tour._id.toLowerCase().includes(term) ||
+          tour.title.toLowerCase().includes(term) ||
+          tour.from.toLowerCase().includes(term) ||
+          tour.to.toLowerCase().includes(term)
+      );
+    }
+
+    setFilteredPackages(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
 
   const handleLocationChange = (e) => {
     setFromLocation(e.target.value);
-    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const totalPages = Math.ceil(filteredPackages.length / itemsPerPage);
@@ -57,6 +88,7 @@ const GroupTour = () => {
       .get("http://localhost:5000/group-tours")
       .then((res) => {
         setTourPackages(res.data);
+        setFilteredPackages(res.data);
         setLoading(false);
       })
       .catch((err) => {
@@ -68,11 +100,9 @@ const GroupTour = () => {
   if (loading)
     return (
       <p className="text-center mt-10">
-        <span class="loading loading-spinner text-info"></span>
+        <span className="loading loading-spinner text-info"></span>
       </p>
     );
-  console.log(mongoUser);
-  console.log(selectedTour);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -84,12 +114,10 @@ const GroupTour = () => {
   };
 
   const handleBookTour = async () => {
-    if(person > selectedTour.availableSlots) {
-     // alert("Not enough slots available.");
-      Swal.fire('Warning', 'Not enough slots available.', 'error');
+    if (person > selectedTour.availableSlots) {
+      Swal.fire("Warning", "Not enough slots available.", "error");
       return;
-    }
-    else{
+    } else {
       try {
         const res = await axios.patch(
           `http://localhost:5000/group-tours/${selectedTour._id}/book`,
@@ -97,22 +125,20 @@ const GroupTour = () => {
             slots: parseInt(person),
           }
         );
-  
+
         if (res.data.modifiedCount > 0) {
-          //alert("Booking confirmed!");
-          Swal.fire('Successful', 'Booking is completed.', 'success');
           setSelectedTour({
             ...selectedTour,
             availableSlots: selectedTour.availableSlots - person,
           });
         }
       } catch (err) {
-        Swal.fire('Error', 'Booking is Failed.', 'error');
-        //alert("Booking failed.");
+        Swal.fire("Error", "Booking is Failed.", "error");
         console.error(err);
       }
     }
   };
+
   return (
     <>
       <Banner
@@ -133,141 +159,201 @@ const GroupTour = () => {
         </div>
 
         <div className="p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm mb-12">
-          <div className="max-w-2xl mx-auto">
-            <label className="block text-lg font-medium text-gray-700 mb-3">
-              <FaMapMarkerAlt className="inline mr-2 text-blue-600" />
-              Filter by departure location
-            </label>
-            <FormControl fullWidth>
-              <Select
-                value={fromLocation}
-                onChange={handleLocationChange}
-                displayEmpty
-                className="bg-white rounded-lg"
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "transparent",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "transparent",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "transparent",
-                    boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)",
-                  },
-                }}
-              >
-                <MenuItem value="">
-                  <em className="text-gray-500">All Locations</em>
-                </MenuItem>
-                {locations.map((location, index) => (
-                  <MenuItem
-                    key={index}
-                    value={location}
-                    className="hover:bg-blue-50"
-                  >
-                    {location}
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-lg font-medium text-gray-700 mb-3">
+                <FiSearch className="inline mr-2 text-blue-600" />
+                Search Tours
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by ID, title, or location..."
+                  className="input input-bordered w-full pl-10"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <FiSearch className="absolute left-3 top-3 text-gray-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-lg font-medium text-gray-700 mb-3">
+                <FaMapMarkerAlt className="inline mr-2 text-blue-600" />
+                Filter by departure location
+              </label>
+              <FormControl fullWidth>
+                <Select
+                  value={fromLocation}
+                  onChange={handleLocationChange}
+                  displayEmpty
+                  className="bg-white rounded-lg"
+                  sx={{
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "transparent",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "transparent",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "transparent",
+                      boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)",
+                    },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em className="text-gray-500">All Locations</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                  {locations.map((location, index) => (
+                    <MenuItem
+                      key={index}
+                      value={location}
+                      className="hover:bg-blue-50"
+                    >
+                      {location}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
           </div>
         </div>
 
+        {/* Results count */}
+        <div className="mb-6 text-gray-600">
+          Showing {filteredPackages.length} of {tourPackages.length} tours
+          {searchTerm && (
+            <span>
+              {" "}
+              matching <span className="font-semibold">"{searchTerm}"</span>
+            </span>
+          )}
+          {fromLocation && (
+            <span>
+              {" "}
+              from <span className="font-semibold">{fromLocation}</span>
+            </span>
+          )}
+        </div>
+
         {/* Cards */}
-        <div className="grid grid-cols-1 gap-8">
-          {paginatedData.map((tour, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
-            >
-              <div className="relative">
-                <img
-                  src={tour.images[0]}
-                  alt={tour.title}
-                  className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                  <div className="flex items-center text-yellow-500">
-                    <FaStar className="mr-1" />
-                    <span className="font-semibold text-gray-800">
-                      {tour.rating}
-                    </span>
+        {filteredPackages.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 gap-8">
+              {paginatedData.map((tour, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+                >
+                  <div className="relative">
+                    <img
+                      src={tour.images[0]}
+                      alt={tour.title}
+                      className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                      <div className="flex items-center text-yellow-500">
+                        <FaStar className="mr-1" />
+                        <span className="font-semibold text-gray-800">
+                          {tour.rating}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-800 line-clamp-1">
+                          {tour.title}
+                        </h2>
+                        <p className="text-sm text-gray-500 mt-1 flex items-center">
+                          <FaCalendarAlt className="mr-2 text-purple-500" />
+                          {formatDate(tour.departureDate)} →{" "}
+                          {formatDate(tour.returnDate)}
+                        </p>
+
+                        {new Date(tour.departureDate) < new Date() && (
+                          <p className="text-xs text-red-600 mt-1 font-semibold">
+                            Departure date has passed
+                          </p>
+                        )}
+                      </div>
+                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                        ৳ {tour.price}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-6">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <FaUserAlt className="mr-1" />
+                        <span>{tour.organizer}</span>
+                      </div>
+                      <button
+                        onClick={() => setSelectedTour(tour)}
+                        className="btn btn-primary btn-sm rounded-full px-6"
+                      >
+                        View Details
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800 line-clamp-1">
-                      {tour.title}
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1 flex items-center">
-                      <FaCalendarAlt className="mr-2 text-purple-500" />
-                      {formatDate(tour.departureDate)} →{" "}
-                      {formatDate(tour.returnDate)}
-                    </p>
+              ))}
+            </div>
 
-                    {new Date(tour.departureDate) < new Date() && (
-                      <p className="text-xs text-red-600 mt-1 font-semibold">
-                        Departure date has passed
-                      </p>
-                    )}
-                  </div>
-                  <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    ৳ {tour.price}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-6">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <FaUserAlt className="mr-1" />
-                    <span>{tour.organizer}</span>
-                  </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-12">
+                <div className="join">
                   <button
-                    onClick={() => setSelectedTour(tour)}
-                    className="btn btn-primary btn-sm rounded-full px-6"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="join-item btn btn-outline"
                   >
-                    View Details
+                    «
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`join-item btn ${
+                        currentPage === i + 1 ? "btn-active" : ""
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="join-item btn btn-outline"
+                  >
+                    »
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-12">
-            <div className="join">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="join-item btn btn-outline"
-              >
-                «
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`join-item btn ${
-                    currentPage === i + 1 ? "btn-active" : ""
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="join-item btn btn-outline"
-              >
-                »
-              </button>
-            </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12 bg-white rounded-lg shadow">
+            <h3 className="text-xl font-medium text-gray-700 mb-2">
+              No tours found
+            </h3>
+            <p className="text-gray-500">
+              Try adjusting your search or filter criteria
+            </p>
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setFromLocation("");
+              }}
+              className="btn btn-link mt-4"
+            >
+              Clear all filters
+            </button>
           </div>
         )}
       </div>
@@ -504,7 +590,7 @@ const GroupTour = () => {
                     <div className="text-2xl font-bold text-blue-600">
                       ৳ {selectedTour.price * person}
                     </div>
-                    <button
+                    {/* <button
                       className="btn btn-primary px-8"
                       onClick={handleBookTour}
                       disabled={
@@ -516,7 +602,30 @@ const GroupTour = () => {
                         ? "Date Passed"
                         : "Book Now"}
                         
-                    </button>
+                    </button> */}
+                    <Link
+                  to="/checkout"
+                  state={{
+                    totalPrice: selectedTour.price * person,
+                    tourId: selectedTour._id,
+                    userName: mongoUser?.userName || "Anonymous",
+                    userEmail: mongoUser?.userMail || "anonymous",
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-full py-3 text-lg font-medium shadow-md hover:shadow-lg transition-all"
+                    onClick={handleBookTour}
+                    disabled={
+                      new Date(selectedTour.departureDate) < new Date() ||
+                      selectedTour.availableSlots < 1
+                    }
+                  >
+                    {new Date(selectedTour.departureDate) < new Date()
+                        ? "Date Passed"
+                        : "Book Now"}
+                  </button>
+                </Link>
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-6 p-3 bg-blue-50 rounded-lg border border-blue-100">

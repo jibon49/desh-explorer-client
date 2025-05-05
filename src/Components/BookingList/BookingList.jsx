@@ -40,18 +40,45 @@ const BookingList = () => {
   // Fetch tour details when payment is selected
   const fetchTourDetails = async (tourId) => {
     try {
-      const response = await axiosSecure.get(`/tourDetails/${tourId}`);
-      setTourDetails(response.data);
+      // First try to fetch from tourPackages collection
+      const tourResponse = await axiosSecure.get(`/tourDetails/${tourId}`);
+      
+      // If not found in tourPackages, try groupTour collection
+      if (!tourResponse.data) {
+        const groupTourResponse = await axiosSecure.get(`/group-tours/${tourId}`);
+        setTourDetails(groupTourResponse.data);
+      } else {
+        setTourDetails(tourResponse.data);
+      }
     } catch (error) {
       console.error('Error fetching tour details:', error);
-      Swal.fire({
-        title: 'Error!',
-        text: error.response?.data?.message || 'Failed to load tour details',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        background: '#fff',
-        color: '#1f2937',
-      });
+      
+      // If the first request fails with 404, try the second collection
+      if (error.response?.status === 404) {
+        try {
+          const groupTourResponse = await axiosSecure.get(`/group-tours/${tourId}`);
+          setTourDetails(groupTourResponse.data);
+        } catch (groupTourError) {
+          console.error('Error fetching group tour details:', groupTourError);
+          Swal.fire({
+            title: 'Error!',
+            text: groupTourError.response?.data?.message || 'Failed to load tour details from both collections',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            background: '#fff',
+            color: '#1f2937',
+          });
+        }
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: error.response?.data?.message || 'Failed to load tour details',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          background: '#fff',
+          color: '#1f2937',
+        });
+      }
     }
   };
 

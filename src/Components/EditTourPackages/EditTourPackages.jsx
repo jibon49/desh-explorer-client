@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaEdit, FaPlus, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaTrash, FaSave, FaTimes, FaSearch } from 'react-icons/fa';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import Swal from 'sweetalert2';
 
@@ -7,23 +7,43 @@ const EditTourPackage = () => {
   const axiosSecure = useAxiosSecure();
   const [tourType, setTourType] = useState('group');
   const [tours, setTours] = useState([]);
+  const [filteredTours, setFilteredTours] = useState([]);
   const [editingTour, setEditingTour] = useState(null);
   const [formData, setFormData] = useState({});
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchTours();
   }, [tourType, axiosSecure]);
+
+  useEffect(() => {
+    filterTours();
+  }, [searchTerm, tours]);
 
   const fetchTours = async () => {
     try {
       const endpoint = tourType === 'group' ? '/group-tours' : '/tourPackages';
       const res = await axiosSecure.get(endpoint);
       setTours(res.data);
+      setFilteredTours(res.data);
     } catch (err) {
       console.error('Failed to fetch tours', err);
       Swal.fire('Error', 'Failed to load tours', 'error');
     }
+  };
+
+  const filterTours = () => {
+    if (!searchTerm) {
+      setFilteredTours(tours);
+      return;
+    }
+    
+    const filtered = tours.filter(tour => 
+      tour._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tour.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredTours(filtered);
   };
 
   const handleDeleteTour = async (tourId) => {
@@ -113,6 +133,16 @@ const EditTourPackage = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Manage Tour Packages</h2>
         <div className="flex gap-4 items-center">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by ID or title..."
+              className="input input-bordered w-full md:w-64 pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+          </div>
           <select
             className="select select-bordered w-full md:w-48"
             value={tourType}
@@ -128,6 +158,7 @@ const EditTourPackage = () => {
         <table className="table w-full">
           <thead className="bg-gray-50">
             <tr>
+              <th className="text-gray-700">Tour ID</th>
               <th className="text-gray-700">Title</th>
               <th className="text-gray-700">{tourType === 'group' ? 'Route' : 'Location'}</th>
               <th className="text-gray-700">Price</th>
@@ -136,8 +167,13 @@ const EditTourPackage = () => {
             </tr>
           </thead>
           <tbody>
-            {tours.map((tour) => (
+            {filteredTours.map((tour) => (
               <tr key={tour._id} className="hover:bg-gray-50">
+                <td className="font-mono text-sm">
+                  <span className="tooltip" data-tip={tour._id}>
+                    {tour._id.substring(0, 6)}...
+                  </span>
+                </td>
                 <td className="font-medium">{tour.title}</td>
                 <td>
                   {tourType === 'group' 
@@ -170,6 +206,11 @@ const EditTourPackage = () => {
             ))}
           </tbody>
         </table>
+        {filteredTours.length === 0 && (
+          <div className="p-8 text-center text-gray-500">
+            No tours found matching your search criteria
+          </div>
+        )}
       </div>
 
       {/* Edit Modal */}
@@ -188,6 +229,18 @@ const EditTourPackage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Common Fields */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Tour ID</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  value={formData._id || ''}
+                  readOnly
+                />
+              </div>
+
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Title</span>
