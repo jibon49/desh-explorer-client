@@ -602,6 +602,7 @@ const GroupTour = () => {
                     </button> */}
                     <Link
                   to="/checkout"
+                  
                   state={{
                     totalPrice: selectedTour.price * person,
                     tourId: selectedTour._id,
@@ -625,6 +626,8 @@ const GroupTour = () => {
                 </Link>
                   </div>
                 </div>
+
+                
                 <div className="flex items-center justify-between mt-6 p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <div className="flex items-center text-sm">
                     <div className="bg-blue-100 p-2 rounded-full mr-3">
