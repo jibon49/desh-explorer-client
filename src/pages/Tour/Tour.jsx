@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Banner from "../Home/Banner/Banner";
 import backImage from "../../assets/tourbg.jpg";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiMapPin, FiCalendar, FiClock, FiDollarSign } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
 
 const Tour = () => {
   const [tourPackages, setTourPackages] = useState([]);
@@ -49,7 +50,7 @@ const Tour = () => {
     setSearchTerm(e.target.value);
   };
 
-  if (!tourPackages.length)
+  if (!tourPackages.length) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -61,16 +62,13 @@ const Tour = () => {
               <div className="card-body p-4">
                 <div className="skeleton h-6 w-3/4 mb-2"></div>
                 <div className="skeleton h-4 w-1/2 mb-4"></div>
-                
                 <div className="flex justify-between items-center mb-3">
                   <div className="skeleton h-4 w-16"></div>
                   <div className="skeleton h-4 w-16"></div>
                 </div>
-                
                 <div className="skeleton h-4 w-full mb-2"></div>
                 <div className="skeleton h-4 w-5/6 mb-2"></div>
                 <div className="skeleton h-4 w-2/3 mb-4"></div>
-                
                 <div className="flex justify-between items-center">
                   <div className="skeleton h-10 w-24 rounded-full"></div>
                   <div className="skeleton h-10 w-24 rounded-full"></div>
@@ -81,70 +79,120 @@ const Tour = () => {
         </div>
       </div>
     );
+  }
 
   return (
     <>
       <Banner
         bgImage={backImage}
-        heading="Tour Packages"
-        text="Explore amazing destinations with our curated tour plans."
+        heading="Discover Amazing Tours"
+        text="Explore our handpicked collection of unforgettable travel experiences"
       />
 
       <div className="my-16 px-4 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <h1 className="font-extrabold text-3xl">Tour Packages</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Our Tour Packages</h1>
+            <p className="text-gray-600 mt-2">
+              {filteredPackages.length} {filteredPackages.length === 1 ? "tour" : "tours"} available
+            </p>
+          </div>
           
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full md:w-80">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" />
+            </div>
             <input
               type="text"
-              placeholder="Search by Tour ID..."
-              className="input input-bordered w-full pl-10"
+              placeholder="Search by Tour ID, name or location..."
+              className="input input-bordered w-full pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               value={searchTerm}
               onChange={handleSearchChange}
             />
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
           </div>
         </div>
 
         {filteredPackages.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
-            <h3 className="text-xl font-medium text-gray-700 mb-2">
-              No tours found
-            </h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm ? `No tours match the ID: ${searchTerm}` : "No tours available"}
-            </p>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="btn btn-sm btn-outline"
-              >
-                Clear search
-              </button>
-            )}
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="max-w-md mx-auto">
+              <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-4 text-xl font-medium text-gray-800">
+                No tours found
+              </h3>
+              <p className="mt-2 text-gray-600">
+                {searchTerm 
+                  ? `We couldn't find any tours matching "${searchTerm}"`
+                  : "There are currently no tours available"}
+              </p>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="mt-4 btn btn-outline btn-primary"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {paginatedData.map((pkg) => (
-                <div key={pkg._id} className="card w-full max-w-sm shadow-md rounded-2xl bg-white p-2 mx-auto">
-                  <div className="flex items-center justify-between px-4 pt-2">
-                    <h1 className="font-bold">{pkg.title}</h1>
+                <div key={pkg._id} className="group relative bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  {/* Badge for tour type */}
+                  <div className="absolute top-4 right-4 z-10 bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+                    {pkg.type}
                   </div>
-                  <figure className="px-5 pt-3">
-                    <img src={pkg.image} alt={pkg.title} className="rounded-xl w-[293px] h-[219px]" />
+                  
+                  {/* Tour image */}
+                  <figure className="relative h-56 overflow-hidden">
+                    <img
+                      src={pkg.image}
+                      alt={pkg.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </figure>
-                  <div className="card-body grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-site-main text-white rounded-2xl">{pkg.type}</div>
-                    <div>{pkg.duration}</div>
-                    <div>{pkg.date}</div>
-                    <div className="flex flex-row items-center mt-2 justify-around col-span-3">
-                      <p className="font-bold text-xl">${pkg.price}/person</p>
-                      <button 
-                        onClick={() => handleBookNow(pkg._id)} 
-                        className="btn bg-site-main text-white rounded-2xl"
+                  
+                  {/* Tour content */}
+                  <div className="p-6">
+                    <div className="flex items-center mb-1">
+                      <FaStar className="text-yellow-400 mr-1" />
+                      <span className="text-sm text-gray-600">4.8</span>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">
+                      {pkg.title}
+                    </h3>
+                    
+                    <div className="flex flex-wrap gap-3 mt-4 mb-5">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <FiMapPin className="mr-1.5 text-blue-500" />
+                        {pkg.location}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <FiCalendar className="mr-1.5 text-blue-500" />
+                        {pkg.date}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <FiClock className="mr-1.5 text-blue-500" />
+                        {pkg.duration}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div>
+                        <span className="text-sm text-gray-500">From</span>
+                        <p className="text-xl font-bold text-blue-600">
+                          ${pkg.price}
+                          <span className="text-sm font-normal text-gray-500"> /person</span>
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleBookNow(pkg._id)}
+                        className="btn btn-primary rounded-lg px-6 transition-all duration-300 hover:shadow-md"
                       >
-                        Book now
+                        Book Now
                       </button>
                     </div>
                   </div>
@@ -154,18 +202,38 @@ const Tour = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                {Array.from({ length: totalPages }, (_, i) => (
+              <div className="flex justify-center mt-12">
+                <nav className="flex items-center gap-1">
                   <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`mx-1 px-4 py-2 rounded-lg ${
-                      currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-200"
-                    }`}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
                   >
-                    {i + 1}
+                    &larr;
                   </button>
-                ))}
+                  
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        currentPage === i + 1 
+                          ? "bg-blue-600 text-white" 
+                          : "border border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    &rarr;
+                  </button>
+                </nav>
               </div>
             )}
           </>

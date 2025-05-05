@@ -521,9 +521,6 @@ const GroupTour = () => {
                           This tour has already departed
                         </p>
                       )}
-                      <p className="">
-                        The Id of this tour is: <span className="text-site-main">{selectedTour._id}</span>
-                      </p>
                     </ul>
                   </div>
                 </div>
