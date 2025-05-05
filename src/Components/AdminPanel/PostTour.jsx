@@ -12,6 +12,7 @@ const PostTour = () => {
 
   const [tourData, setTourData] = useState({
     title: '',
+    ratings: 5,
     image: '',
     type: '',
     duration: '',
@@ -92,6 +93,7 @@ const PostTour = () => {
   const resetForm = () => {
     setTourData({
       title: '',
+      ratings: 5,
       image: '',
       type: '',
       duration: '',

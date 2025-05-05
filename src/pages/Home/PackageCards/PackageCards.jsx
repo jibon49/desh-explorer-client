@@ -231,7 +231,7 @@ const PackageCards = () => {
                 <div className="p-6">
                   <div className="flex items-center mb-1">
                     <FaStar className="text-yellow-400 mr-1" />
-                    <span className="text-sm text-gray-600">4.8 (24 reviews)</span>
+                    <span className="text-sm text-gray-600">{pkg.ratings}</span>
                   </div>
                   
                   <motion.h3 

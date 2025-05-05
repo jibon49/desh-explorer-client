@@ -158,7 +158,7 @@ const Tour = () => {
                   <div className="p-6">
                     <div className="flex items-center mb-1">
                       <FaStar className="text-yellow-400 mr-1" />
-                      <span className="text-sm text-gray-600">4.8</span>
+                      <span className="text-sm text-gray-600">{pkg.ratings}</span>
                     </div>
                     
                     <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">

@@ -8,6 +8,7 @@ import { updateProfile } from "firebase/auth";
 import useAxiosPublic from "../../hooks/useAxiosPublic";
 import { AuthContext } from "../../Authproviders/AuthProviders";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import logo3 from "../../assets/logo3.png";
 
 
 
@@ -111,14 +112,14 @@ const Register = () => {
             className="w-full h-full object-cover rounded-l-lg"
           />
         </div>
-        <div className="w-full md:w-1/2 p-8">
+        <div className="w-full md:w-1/2 p-8 item-center">
           <div className="flex items-center justify-center mb-6">
             <img
-              src="https://storage.googleapis.com/a1aa/image/gP_VBxe9x_3cUja3QbhSibGcL71h37HZBIRBHCzy5F4.jpg"
+              src={logo3}
               alt="Logo"
-              className="mr-2 w-10 h-10"
+              className="mr-2 w-24 h-24"
             />
-            <span className="text-2xl font-bold text-blue-600">Your Logo</span>
+            {/* <span className="text-2xl font-bold text-blue-600">Desh Explorer</span> */}
           </div>
           <h2 className="text-3xl font-bold mb-2">Sign up</h2>
           <p className="text-gray-600 mb-6">

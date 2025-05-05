@@ -4,6 +4,9 @@ import { MdLogout, MdSpaceDashboard } from "react-icons/md";
 import userImg from "/user.png";
 import useAxiosPublic from "../../../hooks/useAxiosPublic";
 import { AuthContext } from "../../../Authproviders/AuthProviders";
+import logo1 from "../../../assets/logo1.png";
+import logo2 from "../../../assets/logo2.png";
+import logo3 from "../../../assets/logo3.png";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -81,9 +84,10 @@ const Navbar = () => {
           </ul>
         </div>
         <div className="flex items-center gap-4">
-          <a className="normal-case font-extrabold text-2xl text-site-main">
+          {/* <a className="normal-case font-extrabold text-2xl text-site-main">
             Desh Explorer
-          </a>
+          </a> */}
+          <img className="w-20" src={logo3} alt="" />
         </div>
       </div>
 

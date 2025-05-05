@@ -1,15 +1,15 @@
-import { useContext, useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
-import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
-import Swal from 'sweetalert2';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { app } from '../../Firebase/firebase.config';
-import useAxiosPublic from '../../hooks/useAxiosPublic';
-import { useForm } from 'react-hook-form';
-import { AuthContext } from '../../Authproviders/AuthProviders';
-
+import { useContext, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import Swal from "sweetalert2";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { app } from "../../Firebase/firebase.config";
+import useAxiosPublic from "../../hooks/useAxiosPublic";
+import { useForm } from "react-hook-form";
+import { AuthContext } from "../../Authproviders/AuthProviders";
+import logo3 from "../../assets/logo3.png";
 const auth = getAuth(app);
 
 const Login = () => {
@@ -23,27 +23,27 @@ const Login = () => {
   const { logIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || "/";
 
   const handleLogin = (data) => {
     const { email, password } = data;
     logIn(email, password)
       .then(() => {
         Swal.fire({
-          title: 'Success',
-          text: 'Login Success',
-          icon: 'success',
-          confirmButtonText: 'Cool',
+          title: "Success",
+          text: "Login Success",
+          icon: "success",
+          confirmButtonText: "Cool",
         }).then(() => {
           navigate(from, { replace: true });
         });
       })
       .catch((error) => {
-        console.error(error);
+        toast.error(error.message);
         if (
-          error.message === 'Firebase: Error (auth/invalid-login-credentials).'
+          error.message === "Firebase: Error (auth/invalid-login-credentials)."
         ) {
-          toast.error('Invalid Email or Password');
+          toast.error("Invalid Email or Password");
         }
       });
   };
@@ -58,18 +58,18 @@ const Login = () => {
         userMail: user.email,
         userPhoto: user.photoURL,
         userJoined: user.metadata.creationTime,
-        membership: 'bronze',
-        userRole: 'member',
+        membership: "bronze",
+        userRole: "member",
       };
 
       try {
-        axiosPublic.post('/users', userInfo).then((res) => {
+        axiosPublic.post("/users", userInfo).then((res) => {
           if (res.data) {
             Swal.fire({
-              title: 'Success',
-              text: 'Login Success',
-              icon: 'success',
-              confirmButtonText: 'Cool',
+              title: "Success",
+              text: "Login Success",
+              icon: "success",
+              confirmButtonText: "Cool",
             });
           }
           navigate(from, { replace: true });
@@ -87,7 +87,7 @@ const Login = () => {
         <div className="w-full md:w-1/2 p-8">
           <div className="flex items-center mb-8">
             <i className="fas fa-globe text-blue-500 text-3xl mr-2"></i>
-            <span className="text-2xl font-bold">Your Logo</span>
+            <img className="w-24" src={logo3} alt="" />
           </div>
           <h2 className="text-3xl font-bold mb-4">Login</h2>
           <p className="text-gray-600 mb-6">
@@ -98,43 +98,41 @@ const Login = () => {
               <label className="block text-gray-700">Email</label>
               <input
                 type="email"
-                {...register('email', { required: true })}
+                {...register("email", { required: true })}
                 placeholder="Enter your email"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {errors.email && (
-                <span className="text-red-500 text-sm">
-                  Email is required
-                </span>
+                <span className="text-red-500 text-sm">Email is required</span>
               )}
             </div>
             <div className="mb-4">
-  <label className="block text-gray-700">Password</label>
-  <div className="relative">
-    <input
-      type={showPassword ? "text" : "password"}
-      {...register('password', { required: true })}
-      placeholder="Enter your password"
-      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-    />
-    <button
-      type="button"
-      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-      onClick={() => setShowPassword(!showPassword)}
-    >
-      {showPassword ? (
-        <FaEyeSlash className="h-5 w-5" />
-      ) : (
-        <FaEye className="h-5 w-5" />
-      )}
-    </button>
-  </div>
-  {errors.password && (
-    <span className="text-red-500 text-sm">
-      Password is required
-    </span>
-  )}
-</div>
+              <label className="block text-gray-700">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  {...register("password", { required: true })}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <FaEyeSlash className="h-5 w-5" />
+                  ) : (
+                    <FaEye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <span className="text-red-500 text-sm">
+                  Password is required
+                </span>
+              )}
+            </div>
             <div className="flex items-center justify-between mb-6">
               <label className="flex items-center">
                 <input
@@ -155,7 +153,7 @@ const Login = () => {
             </button>
           </form>
           <p className="text-center text-gray-600 mt-4">
-            Don&apos;t have an account?{' '}
+            Don&apos;t have an account?{" "}
             <NavLink to="/register" className="text-blue-500 font-medium">
               Sign up
             </NavLink>
