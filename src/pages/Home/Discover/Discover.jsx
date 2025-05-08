@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import discoverImg from "./../../../assets/banner.jpeg";
+import discoverImg from "./../../../assets/banner3.jpg";
 
 const Discover = () => {
   const controls = useAnimation();

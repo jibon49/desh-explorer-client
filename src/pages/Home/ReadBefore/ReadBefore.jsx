@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import cardImg from "../../../assets/banner.jpeg";
+import cardImg2 from "../../../assets/banner4.png";
 
 const ReadBefore = () => {
   const controls = useAnimation();
@@ -152,7 +153,7 @@ const ReadBefore = () => {
         variants={containerVariants}
       >
         <motion.img
-          src={cardImg}
+          src={cardImg2}
           alt="Travel"
           className="w-full lg:w-[50%] rounded-xl shadow-xl object-cover aspect-video lg:aspect-auto"
           variants={imageVariants}
