@@ -43,7 +43,7 @@ const Navbar = () => {
         <NavLink to="/group-tour" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Group Tour</NavLink>
       </li>
       <li>
-        <NavLink to="/blogs-review" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Blogs & Review</NavLink>
+        <NavLink to="/review" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}> Review</NavLink>
       </li>
       <li>
         <NavLink to="/complain-form" className={({ isActive }) => isActive ? "text-site-main font-bold" : "font-bold hover:text-site-main"}>Complain</NavLink>
