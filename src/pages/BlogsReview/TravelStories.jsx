@@ -1,11 +1,27 @@
-import React, { useState } from "react";
-import { FaStar, FaPaperPlane, FaCalendarAlt, FaMapMarkerAlt, FaImage } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { 
+  FaStar, 
+  FaPaperPlane, 
+  FaCalendarAlt, 
+  FaMapMarkerAlt, 
+  FaImage,
+  FaHeart,
+  FaRegHeart,
+  FaComment,
+  FaRegComment
+} from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import Blogs from "../../../public/Blogs.json";
+import axios from "axios";
+import Swal from "sweetalert2";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useMongoUser from "../../hooks/userMongoUser";
 
-const TravelStories = ({ bookings, onAddStory }) => {
-  const [stories, setStories] = useState(Blogs);
+const TravelStories = () => {
+  const { mongoUser } = useMongoUser();
+  const axiosSecure = useAxiosSecure();
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentStoryPage, setCurrentStoryPage] = useState(1);
   const storiesPerPage = 6;
   const [showStoryModal, setShowStoryModal] = useState(false);
@@ -18,6 +34,23 @@ const TravelStories = ({ bookings, onAddStory }) => {
     content: "",
   });
   const [imagePreview, setImagePreview] = useState("");
+  const [activeCommentStory, setActiveCommentStory] = useState(null);
+  const [commentText, setCommentText] = useState("");
+
+  // Fetch stories from backend
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const response = await axiosSecure.get("/stories");
+        setStories(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching stories:", error);
+        setLoading(false);
+      }
+    };
+    fetchStories();
+  }, [axiosSecure]);
 
   // Calculate pagination for stories
   const indexOfLastStory = currentStoryPage * storiesPerPage;
@@ -29,10 +62,9 @@ const TravelStories = ({ bookings, onAddStory }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <FaStar
         key={i}
-        className={`text-xl cursor-pointer ${
+        className={`text-xl ${
           i < count ? "text-yellow-400" : "text-gray-300"
         }`}
-        onClick={() => handleStoryRating(i + 1)}
       />
     ));
   };
@@ -54,26 +86,172 @@ const TravelStories = ({ bookings, onAddStory }) => {
     setNewStory((prev) => ({ ...prev, rating }));
   };
 
-  const handleStorySubmit = (e) => {
+  const handleLike = async (storyId) => {
+    if (!mongoUser?._id) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to like stories",
+      });
+      return;
+    }
+
+    try {
+      await axiosSecure.patch(`/stories/${storyId}/like`, { userId: mongoUser._id });
+      setStories(stories.map(story => {
+        if (story._id === storyId) {
+          const isLiked = story.likes?.includes(mongoUser._id);
+          return {
+            ...story,
+            likes: isLiked 
+              ? story.likes.filter(id => id !== mongoUser._id)
+              : [...(story.likes || []), mongoUser._id]
+          };
+        }
+        return story;
+      }));
+    } catch (error) {
+      console.error("Error liking story:", error);
+    }
+  };
+
+  const handleCommentSubmit = async (storyId) => {
+    if (!commentText.trim()) return;
+    if (!mongoUser?._id) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to add comments",
+      });
+      return;
+    }
+
+    try {
+      const response = await axiosSecure.post(`/stories/${storyId}/comments`, {
+        userId: mongoUser._id,
+        text: commentText,
+        userName: mongoUser.userName,
+        userPhoto: mongoUser.userPhoto
+      });
+
+      setStories(stories.map(story => {
+        if (story._id === storyId) {
+          return {
+            ...story,
+            comments: [
+              ...(story.comments || []),
+              {
+                userId: mongoUser._id,
+                text: commentText,
+                userName: mongoUser.userName,
+                userPhoto: mongoUser.userPhoto,
+                createdAt: new Date().toISOString()
+              }
+            ]
+          };
+        }
+        return story;
+      }));
+
+      setCommentText("");
+      setActiveCommentStory(null);
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const handleStorySubmit = async (e) => {
     e.preventDefault();
-    const submittedStory = {
-      ...newStory,
-      id: stories.length + 1,
-      image: imagePreview || "https://placehold.co/600x400",
+    
+    if (!mongoUser?._id) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to share stories",
+      });
+      return;
+    }
+
+    let imageUrl = "";
+    
+    // Upload image if exists
+    if (newStory.image) {
+      const formData = new FormData();
+      formData.append("image", newStory.image);
+
+      try {
+        const imgRes = await axios.post(
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMAGE_HOSTING_KEY}`,
+          formData
+        );
+
+        if (imgRes.data.success) {
+          imageUrl = imgRes.data.data.display_url;
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Image Upload Failed",
+            text: "Please try again.",
+          });
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: "error",
+          title: "Image Upload Failed",
+          text: "Please try again.",
+        });
+        return;
+      }
+    }
+
+    const storyData = {
+      title: newStory.title,
+      location: newStory.location,
+      date: newStory.date,
+      rating: newStory.rating,
+      content: newStory.content,
+      image: imageUrl || "https://placehold.co/600x400",
+      author: {
+        id: mongoUser._id,
+        name: mongoUser.userName,
+        photo: mongoUser.userPhoto
+      },
+      likes: [],
+      comments: [],
+      createdAt: new Date().toISOString()
     };
-    setStories((prev) => [submittedStory, ...prev]);
-    setShowStoryModal(false);
-    setNewStory({
-      title: "",
-      location: "",
-      date: "",
-      rating: 0,
-      image: null,
-      content: "",
-    });
-    setImagePreview("");
-    alert("Your travel story has been shared!");
-    setCurrentStoryPage(1);
+
+    try {
+      const response = await axiosSecure.post("/stories", storyData);
+      if (response.data.insertedId) {
+        setStories([{ ...storyData, _id: response.data.insertedId }, ...stories]);
+        setShowStoryModal(false);
+        setNewStory({
+          title: "",
+          location: "",
+          date: "",
+          rating: 0,
+          image: null,
+          content: "",
+        });
+        setImagePreview("");
+        Swal.fire({
+          icon: "success",
+          title: "Story Published!",
+          text: "Your travel story has been shared successfully.",
+        });
+        setCurrentStoryPage(1);
+      }
+    } catch (error) {
+      console.error("Error submitting story:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: "Failed to publish your story. Please try again.",
+      });
+    }
   };
 
   const nextStoryPage = () => {
@@ -87,6 +265,14 @@ const TravelStories = ({ bookings, onAddStory }) => {
       setCurrentStoryPage(currentStoryPage - 1);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -108,7 +294,7 @@ const TravelStories = ({ bookings, onAddStory }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         {currentStories.map((story) => (
           <div
-            key={story.id}
+            key={story._id}
             className="card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden group hover:-translate-y-1"
           >
             <figure className="relative h-48 overflow-hidden">
@@ -127,25 +313,84 @@ const TravelStories = ({ bookings, onAddStory }) => {
               <div className="flex justify-between items-start mb-2">
                 <h2 className="card-title text-gray-800">{story.title}</h2>
                 <div className="flex">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <FaStar
-                      key={i}
-                      className={`text-sm ${
-                        i < story.rating ? "text-yellow-400" : "text-gray-300"
-                      }`}
-                    />
-                  ))}
+                  {renderStoryStars(story.rating)}
                 </div>
               </div>
               <div className="flex items-center text-gray-500 text-sm mb-4">
-                <FaCalendarAlt className="mr-2" /> {story.date}
+                <FaCalendarAlt className="mr-2" /> {new Date(story.date).toLocaleDateString()}
               </div>
               <p className="text-gray-600 line-clamp-3">{story.content}</p>
-              <div className="card-actions justify-end mt-4">
-                <button className="btn btn-sm btn-primary hover:bg-blue-600">
-                  Read Full Story
+              
+              {/* Author Info */}
+              <div className="flex items-center mt-4 gap-2">
+                <div className="avatar">
+                  <div className="w-8 rounded-full">
+                    <img src={story.author?.photo || "https://placehold.co/50"} alt={story.author?.name} />
+                  </div>
+                </div>
+                <span className="text-sm text-gray-600">{story.author?.name}</span>
+              </div>
+              
+              {/* Like and Comment Section */}
+              <div className="flex justify-between items-center mt-4 border-t pt-3">
+                <button 
+                  className="flex items-center gap-1 text-gray-600 hover:text-red-500"
+                  onClick={() => handleLike(story._id)}
+                >
+                  {story.likes?.includes(mongoUser?._id) ? (
+                    <FaHeart className="text-red-500" />
+                  ) : (
+                    <FaRegHeart />
+                  )}
+                  <span>{story.likes?.length || 0}</span>
+                </button>
+                
+                <button 
+                  className="flex items-center gap-1 text-gray-600 hover:text-blue-500"
+                  onClick={() => setActiveCommentStory(activeCommentStory === story._id ? null : story._id)}
+                >
+                  <FaRegComment />
+                  <span>{story.comments?.length || 0}</span>
                 </button>
               </div>
+              
+              {/* Comments Section */}
+              {activeCommentStory === story._id && (
+                <div className="mt-4 border-t pt-3">
+                  <div className="max-h-40 overflow-y-auto mb-2">
+                    {story.comments?.map((comment, idx) => (
+                      <div key={idx} className="mb-2 last:mb-0">
+                        <div className="flex items-start gap-2">
+                          <div className="avatar">
+                            <div className="w-6 rounded-full">
+                              <img src={comment.userPhoto || "https://placehold.co/30"} alt={comment.userName} />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{comment.userName}</p>
+                            <p className="text-sm text-gray-600">{comment.text}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="Add a comment..."
+                      className="input input-bordered input-sm flex-1"
+                    />
+                    <button 
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleCommentSubmit(story._id)}
+                    >
+                      Post
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -215,22 +460,17 @@ const TravelStories = ({ bookings, onAddStory }) => {
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">Package Name*</span>
+                    <span className="label-text font-medium">Location*</span>
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="location"
                     value={newStory.location}
                     onChange={handleInputChange}
-                    className="select select-bordered w-full focus:ring-2 focus:ring-blue-500"
+                    placeholder="Where did you go?"
+                    className="input input-bordered w-full focus:ring-2 focus:ring-blue-500"
                     required
-                  >
-                    <option value="">Select a Package</option>
-                    {bookings.map((pack, i) => (
-                      <option key={i} value={pack.title}>
-                        {pack.title}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,11 +479,10 @@ const TravelStories = ({ bookings, onAddStory }) => {
                     <span className="label-text font-medium">Date*</span>
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     name="date"
                     value={newStory.date}
                     onChange={handleInputChange}
-                    placeholder="When was your trip?"
                     className="input input-bordered w-full focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -253,7 +492,15 @@ const TravelStories = ({ bookings, onAddStory }) => {
                     <span className="label-text font-medium">Your Rating*</span>
                   </label>
                   <div className="flex items-center gap-2">
-                    {renderStoryStars(newStory.rating)}
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <FaStar
+                        key={i}
+                        className={`text-xl cursor-pointer ${
+                          i < newStory.rating ? "text-yellow-400" : "text-gray-300"
+                        }`}
+                        onClick={() => handleStoryRating(i + 1)}
+                      />
+                    ))}
                     <span className="text-gray-600">{newStory.rating}/5</span>
                   </div>
                 </div>
