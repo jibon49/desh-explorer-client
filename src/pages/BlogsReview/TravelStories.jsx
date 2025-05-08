@@ -8,7 +8,8 @@ import {
   FaHeart,
   FaRegHeart,
   FaComment,
-  FaRegComment
+  FaRegComment,
+  FaTimes
 } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -25,6 +26,8 @@ const TravelStories = () => {
   const [currentStoryPage, setCurrentStoryPage] = useState(1);
   const storiesPerPage = 6;
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedStory, setSelectedStory] = useState(null);
   const [newStory, setNewStory] = useState({
     title: "",
     location: "",
@@ -110,6 +113,19 @@ const TravelStories = () => {
         }
         return story;
       }));
+      
+      // Update selected story if it's the one being liked
+      if (selectedStory?._id === storyId) {
+        setSelectedStory(prev => {
+          const isLiked = prev.likes?.includes(mongoUser._id);
+          return {
+            ...prev,
+            likes: isLiked 
+              ? prev.likes.filter(id => id !== mongoUser._id)
+              : [...(prev.likes || []), mongoUser._id]
+          };
+        });
+      }
     } catch (error) {
       console.error("Error liking story:", error);
     }
@@ -152,6 +168,23 @@ const TravelStories = () => {
         }
         return story;
       }));
+
+      // Update selected story if it's the one being commented on
+      if (selectedStory?._id === storyId) {
+        setSelectedStory(prev => ({
+          ...prev,
+          comments: [
+            ...(prev.comments || []),
+            {
+              userId: mongoUser._id,
+              text: commentText,
+              userName: mongoUser.userName,
+              userPhoto: mongoUser.userPhoto,
+              createdAt: new Date().toISOString()
+            }
+          ]
+        }));
+      }
 
       setCommentText("");
       setActiveCommentStory(null);
@@ -254,6 +287,11 @@ const TravelStories = () => {
     }
   };
 
+  const handleStoryClick = (story) => {
+    setSelectedStory(story);
+    setShowDetailModal(true);
+  };
+
   const nextStoryPage = () => {
     if (currentStoryPage < totalStoryPages) {
       setCurrentStoryPage(currentStoryPage + 1);
@@ -295,7 +333,8 @@ const TravelStories = () => {
         {currentStories.map((story) => (
           <div
             key={story._id}
-            className="card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden group hover:-translate-y-1"
+            className="card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden group hover:-translate-y-1 cursor-pointer"
+            onClick={() => handleStoryClick(story)}
           >
             <figure className="relative h-48 overflow-hidden">
               <img
@@ -335,7 +374,10 @@ const TravelStories = () => {
               <div className="flex justify-between items-center mt-4 border-t pt-3">
                 <button 
                   className="flex items-center gap-1 text-gray-600 hover:text-red-500"
-                  onClick={() => handleLike(story._id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLike(story._id);
+                  }}
                 >
                   {story.likes?.includes(mongoUser?._id) ? (
                     <FaHeart className="text-red-500" />
@@ -347,16 +389,23 @@ const TravelStories = () => {
                 
                 <button 
                   className="flex items-center gap-1 text-gray-600 hover:text-blue-500"
-                  onClick={() => setActiveCommentStory(activeCommentStory === story._id ? null : story._id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveCommentStory(activeCommentStory === story._id ? null : story._id);
+                  }}
                 >
-                  <FaRegComment />
+                  {activeCommentStory === story._id ? (
+                    <FaComment />
+                  ) : (
+                    <FaRegComment />
+                  )}
                   <span>{story.comments?.length || 0}</span>
                 </button>
               </div>
               
               {/* Comments Section */}
               {activeCommentStory === story._id && (
-                <div className="mt-4 border-t pt-3">
+                <div className="mt-4 border-t pt-3" onClick={(e) => e.stopPropagation()}>
                   <div className="max-h-40 overflow-y-auto mb-2">
                     {story.comments?.map((comment, idx) => (
                       <div key={idx} className="mb-2 last:mb-0">
@@ -429,7 +478,7 @@ const TravelStories = () => {
         </div>
       </div>
 
-      {/* Story Modal */}
+      {/* Story Creation Modal */}
       {showStoryModal && (
         <div className="modal modal-open">
           <div className="modal-box relative max-w-2xl p-8 rounded-xl">
@@ -571,6 +620,160 @@ const TravelStories = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Story Detail Modal */}
+      {showDetailModal && selectedStory && (
+        <div className="modal modal-open">
+          <div className="modal-box relative max-w-4xl p-0 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setShowDetailModal(false)}
+              className="btn btn-sm btn-circle absolute right-4 top-4 z-10 hover:bg-gray-100"
+            >
+              <FaTimes className="text-gray-500" />
+            </button>
+            
+            {/* Story Image */}
+            <figure className="relative h-96 w-full">
+              <img
+                src={selectedStory.image}
+                alt={selectedStory.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
+                <div className="text-white">
+                  <h2 className="text-3xl font-bold mb-2">{selectedStory.title}</h2>
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1">
+                      <FaMapMarkerAlt /> {selectedStory.location}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <FaCalendarAlt /> {new Date(selectedStory.date).toLocaleDateString()}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      {renderStoryStars(selectedStory.rating)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </figure>
+            
+            {/* Story Content */}
+            <div className="p-6">
+              {/* Author Info */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="avatar">
+                  <div className="w-12 rounded-full">
+                    <img 
+                      src={selectedStory.author?.photo || "https://placehold.co/50"} 
+                      alt={selectedStory.author?.name} 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium">{selectedStory.author?.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    Posted on {new Date(selectedStory.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Story Text */}
+              <div className="prose max-w-none mb-8">
+                {selectedStory.content.split('\n').map((paragraph, i) => (
+                  <p key={i} className="mb-4">{paragraph}</p>
+                ))}
+              </div>
+              
+              {/* Like and Comment Section */}
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <button 
+                    className="flex items-center gap-2 btn btn-ghost"
+                    onClick={() => handleLike(selectedStory._id)}
+                  >
+                    {selectedStory.likes?.includes(mongoUser?._id) ? (
+                      <FaHeart className="text-red-500 text-xl" />
+                    ) : (
+                      <FaRegHeart className="text-xl" />
+                    )}
+                    <span>{selectedStory.likes?.length || 0} Likes</span>
+                  </button>
+                  
+                  <button 
+                    className="flex items-center gap-2 btn btn-ghost"
+                    onClick={() => setActiveCommentStory(activeCommentStory === selectedStory._id ? null : selectedStory._id)}
+                  >
+                    <FaRegComment className="text-xl" />
+                    <span>{selectedStory.comments?.length || 0} Comments</span>
+                  </button>
+                </div>
+                
+                {/* Comments Section */}
+                {activeCommentStory === selectedStory._id && (
+                  <div className="mt-4">
+                    <h3 className="text-lg font-semibold mb-3">Comments</h3>
+                    
+                    {/* Comments List */}
+                    <div className="space-y-4 mb-4 max-h-60 overflow-y-auto p-2">
+                      {selectedStory.comments?.length > 0 ? (
+                        selectedStory.comments.map((comment, idx) => (
+                          <div key={idx} className="flex gap-3">
+                            <div className="avatar">
+                              <div className="w-10 rounded-full">
+                                <img 
+                                  src={comment.userPhoto || "https://placehold.co/40"} 
+                                  alt={comment.userName} 
+                                />
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="bg-gray-100 rounded-lg p-3">
+                                <h4 className="font-medium">{comment.userName}</h4>
+                                <p className="text-gray-700">{comment.text}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {new Date(comment.createdAt).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-center py-4">No comments yet</p>
+                      )}
+                    </div>
+                    
+                    {/* Add Comment */}
+                    <div className="flex gap-2">
+                      <div className="avatar">
+                        <div className="w-10 rounded-full">
+                          <img 
+                            src={mongoUser?.userPhoto || "https://placehold.co/40"} 
+                            alt={mongoUser?.userName} 
+                          />
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        placeholder="Add a comment..."
+                        className="input input-bordered flex-1"
+                      />
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => handleCommentSubmit(selectedStory._id)}
+                        disabled={!commentText.trim()}
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
