@@ -138,6 +138,7 @@ const GroupTour = () => {
       }
     }
   };
+  
 
   return (
     <>

@@ -10,6 +10,7 @@ import { MdOutlineTour } from "react-icons/md";
 import CustomTourManage from "../CustomTourManage/CustomTourManage";
 import CustomTourBooking from "../CustomTourBooking/CustomTourBooking";
 import MyBookings from "../userPanel/MyBookings";
+import ComplaintsList from "./Complain/ComplaintsList";
 const AdminPanel = () => {
   const [selectedOption, setSelectedOption] = useState("manageUsers");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -30,6 +31,8 @@ const AdminPanel = () => {
         return <CustomTourBooking />;
       case "myBookings":
         return <MyBookings/>;
+      case "complain":
+        return <ComplaintsList />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -80,6 +83,11 @@ const AdminPanel = () => {
     {
       id: "myBookings",
       label: "My Bookings",
+      icon: <FiCalendar className="mr-3" />,
+    },
+    {
+      id: "complain",
+      label: "Complain",
       icon: <FiCalendar className="mr-3" />,
     },
   ];

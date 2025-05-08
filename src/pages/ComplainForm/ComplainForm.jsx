@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   FaSearch,
   FaStar,
@@ -9,10 +9,14 @@ import {
 import { IoIosAlert } from "react-icons/io";
 import { BiCheckShield } from "react-icons/bi";
 import Banner from "../Home/Banner/Banner";
-import axios from "axios";
 import useMongoUser from "../../hooks/userMongoUser";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Swal from "sweetalert2";
+import { AuthContext } from "../../Authproviders/AuthProviders";
+import axios from "axios";
 
 const ComplainForm = () => {
+  const { user } = useContext(AuthContext);
   const [tourId, setTourId] = useState("");
   const [complainText, setComplainText] = useState("");
   const [file, setFile] = useState(null);
@@ -21,10 +25,32 @@ const ComplainForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searching, setSearching] = useState(false);
   const { mongoUser } = useMongoUser();
+  const axiosSecure = useAxiosSecure();
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+      // Validate file size (5MB max)
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: "error",
+          title: "File too large",
+          text: "Maximum file size is 5MB",
+        });
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ["image/jpeg", "image/png", "application/pdf"];
+      if (!validTypes.includes(selectedFile.type)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid file type",
+          text: "Only JPG, PNG, and PDF files are allowed",
+        });
+        return;
+      }
+
       setFile(selectedFile);
       setFileName(selectedFile.name);
     }
@@ -32,20 +58,20 @@ const ComplainForm = () => {
 
   const handleSearch = async () => {
     if (!tourId.trim()) {
-      alert("Please enter a Tour ID");
+      Swal.fire({
+        icon: "warning",
+        title: "Tour ID required",
+        text: "Please enter a Tour ID to search",
+      });
       return;
     }
 
     setSearching(true);
     try {
-      // Search in both collections
+      // Search in both collections 
       const [groupTourRes, packageRes] = await Promise.all([
-        axios
-          .get(`http://localhost:5000/group-tours/${tourId}`)
-          .catch(() => ({ data: null })),
-        axios
-          .get(`http://localhost:5000/tourPackages/${tourId}`)
-          .catch(() => ({ data: null })),
+        axiosSecure.get(`/group-tours/${tourId}`).catch(() => ({ data: null })),
+        axiosSecure.get(`/tourDetails/${tourId}`).catch(() => ({ data: null })),
       ]);
 
       if (groupTourRes?.data) {
@@ -61,56 +87,118 @@ const ComplainForm = () => {
           collection: "tourPackages",
         });
       } else {
-        alert("No tour found with that ID");
+        Swal.fire({
+          icon: "error",
+          title: "Not found",
+          text: "No tour found with that ID",
+        });
         setSearchResult(null);
       }
     } catch (err) {
       console.error("Tour fetch error:", err);
-      alert("Error searching for tour. Please check the ID format.");
+      Swal.fire({
+        icon: "error",
+        title: "Search failed",
+        text: "Error searching for tour. Please check the ID format.",
+      });
       setSearchResult(null);
     } finally {
       setSearching(false);
     }
   };
+
   const handleSubmit = async () => {
     if (!tourId || !complainText) {
-      alert("Please fill in all required fields");
+      Swal.fire({
+        icon: "warning",
+        title: "Missing information",
+        text: "Please fill in all required fields",
+      });
       return;
     }
 
-    const complaintData = {
-      tourId,
-      tourType: searchResult?.collection || "unknown",
-      complaint: complainText,
-      fileName,
-      date: new Date().toISOString(),
-      user: {
-        name: mongoUser?.userName,
-        email: mongoUser?.userMail,
-        photo: mongoUser?.userPhoto,
-      },
-    };
+    if (complainText.length < 20) {
+      Swal.fire({
+        icon: "warning",
+        title: "Description too short",
+        text: "Please provide more details about your complaint (minimum 20 characters)",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
+
     try {
-      const res = await axios.post(
-        "http://localhost:5000/complaints",
-        complaintData
-      );
-      if (res.data.success) {
-        alert("Complaint submitted successfully!");
-        // Reset form
-        setTourId("");
-        setComplainText("");
-        setFile(null);
-        setFileName("");
-        setSearchResult(null);
-      } else {
-        throw new Error(res.data.message || "Failed to submit complaint");
+      // First upload the image if one was selected
+      let imageUrl = "";
+      if (file) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const imgRes = await axios.post(
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMAGE_HOSTING_KEY}`,
+          formData
+        );
+
+        if (imgRes.data.success) {
+          imageUrl = imgRes.data.data.display_url;
+        } else {
+          throw new Error("Failed to upload image");
+        }
+      }
+
+      const complaintData = {
+        tourId,
+        tourType: searchResult?.collection || "unknown",
+        complaint: complainText,
+        fileName: imageUrl || "",
+        date: new Date().toISOString(),
+        user: {
+          name: mongoUser?.userName,
+          email: mongoUser?.userMail,
+          photo: mongoUser?.userPhoto,
+        },
+      };
+
+      // Show confirmation dialog
+      const result = await Swal.fire({
+        title: "Submit complaint?",
+        text: "Are you sure you want to submit this complaint?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, submit it!",
+      });
+
+      if (result.isConfirmed) {
+        const res = await axiosSecure.post("/complains", complaintData);
+        if (res.data.insertedId) {
+          await Swal.fire({
+            icon: "success",
+            title: "Complaint submitted!",
+            text: "Your complaint has been received. We'll get back to you soon.",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+
+          // Reset form
+          setTourId("");
+          setComplainText("");
+          setFile(null);
+          setFileName("");
+          setSearchResult(null);
+        } else {
+          throw new Error(res.data.message || "Failed to submit complaint");
+        }
       }
     } catch (err) {
       console.error("Submission error:", err);
-      alert(`Error: ${err.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Submission failed",
+        text: err.message || "An error occurred while submitting your complaint",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -151,6 +239,7 @@ const ComplainForm = () => {
                   type="text"
                   value={tourId}
                   onChange={(e) => setTourId(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                   <FaSearch className="text-lg" />
@@ -185,6 +274,9 @@ const ComplainForm = () => {
                         "https://placehold.co/200"
                       }
                       alt={searchResult.title}
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/200";
+                      }}
                     />
                   </div>
                 </div>
@@ -311,7 +403,16 @@ const ComplainForm = () => {
                   value={complainText}
                   onChange={(e) => setComplainText(e.target.value)}
                   required
+                  minLength={20}
                 />
+                <label className="label">
+                  <span className="label-text-alt text-gray-500">
+                    Minimum 20 characters
+                  </span>
+                  <span className="label-text-alt">
+                    {complainText.length}/1000
+                  </span>
+                </label>
               </div>
 
               <div className="form-control">
@@ -350,6 +451,15 @@ const ComplainForm = () => {
                     </div>
                   )}
                 </div>
+                {file && (
+                  <div className="mt-2">
+                    <div className="avatar">
+                      <div className="w-16 rounded">
+                        <img src={URL.createObjectURL(file)} alt="Preview" />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <label className="label">
                   <span className="label-text-alt text-gray-500">
                     <FaInfoCircle className="inline mr-1" />
@@ -369,7 +479,7 @@ const ComplainForm = () => {
                 isSubmitting ? "loading" : ""
               }`}
               onClick={handleSubmit}
-              disabled={!tourId || !complainText || isSubmitting}
+              disabled={!tourId || !complainText || isSubmitting || complainText.length < 20}
             >
               {!isSubmitting && <FaPaperPlane className="mr-2" />}
               {isSubmitting ? "Submitting..." : "Submit Complaint"}
