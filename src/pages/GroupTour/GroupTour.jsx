@@ -138,7 +138,8 @@ const GroupTour = () => {
       }
     }
   };
-  
+
+  // this is a savepoint
 
   return (
     <>
@@ -601,35 +602,39 @@ const GroupTour = () => {
                         : "Book Now"}
                         
                     </button> */}
-                    <Link
-                  to="/checkout"
-                  
-                  state={{
-                    totalPrice: selectedTour.price * person,
-                    tourTitle: selectedTour.title,
-                    tourId: selectedTour._id,
-                    userName: mongoUser?.userName || "Anonymous",
-                    userEmail: mongoUser?.userMail || "anonymous",
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-full py-3 text-lg font-medium shadow-md hover:shadow-lg transition-all"
-                    onClick={handleBookTour}
-                    disabled={
-                      new Date(selectedTour.departureDate) < new Date() ||
-                      selectedTour.availableSlots < 1
-                    }
-                  >
-                    {new Date(selectedTour.departureDate) < new Date()
-                        ? "Date Passed"
-                        : "Book Now"}
-                  </button>
-                </Link>
+                    {selectedTour.availableSlots < 1 ? (
+                      <button className="btn btn-primary px-8" disabled>
+                        Sold Out
+                      </button>
+                    ) : (
+                      <Link
+                        to="/checkout"
+                        state={{
+                          totalPrice: selectedTour.price * person,
+                          tourTitle: selectedTour.title,
+                          tourId: selectedTour._id,
+                          userName: mongoUser?.userName || "Anonymous",
+                          userEmail: mongoUser?.userMail || "anonymous",
+                        }}
+                      >
+                        <button
+                          type="submit"
+                          className="btn btn-primary w-full py-3 text-lg font-medium shadow-md hover:shadow-lg transition-all"
+                          onClick={handleBookTour}
+                          disabled={
+                            new Date(selectedTour.departureDate) < new Date() ||
+                            selectedTour.availableSlots < 1
+                          }
+                        >
+                          {new Date(selectedTour.departureDate) < new Date()
+                            ? "Date Passed"
+                            : "Book Now"}
+                        </button>
+                      </Link>
+                    )}
                   </div>
                 </div>
 
-                
                 <div className="flex items-center justify-between mt-6 p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <div className="flex items-center text-sm">
                     <div className="bg-blue-100 p-2 rounded-full mr-3">
