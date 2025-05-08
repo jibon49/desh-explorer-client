@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import Blogs from '../../../public/Blogs.json';
+import React, { useEffect, useState } from "react";
+import Blogs from "../../../public/Blogs.json";
+import { motion } from "framer-motion";
 import {
   FaStar,
   FaPenAlt,
@@ -8,18 +9,18 @@ import {
   FaImage,
   FaPaperPlane,
   FaChevronLeft,
-  FaChevronRight
-} from 'react-icons/fa';
-import { IoClose } from 'react-icons/io5';
+  FaChevronRight,
+} from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 import Banner from "../Home/Banner/Banner";
-import backImage from '../../assets/banner3.jpg';
-import useAxiosSecure from '../../hooks/useAxiosSecure';
-import useMongoUser from '../../hooks/userMongoUser';
+import backImage from "../../assets/banner3.jpg";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useMongoUser from "../../hooks/userMongoUser";
+import Swal from "sweetalert2";
 
 const Reviews = () => {
-
-  const {mongoUser}=useMongoUser()
-  const [activeTab, setActiveTab] = useState('reviews');
+  const { mongoUser } = useMongoUser();
+  const [activeTab, setActiveTab] = useState("reviews");
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviews, setReviews] = useState([]);
   const axiosSecure = useAxiosSecure();
@@ -39,14 +40,24 @@ const Reviews = () => {
 
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [newStory, setNewStory] = useState({
-    title: '',
-    location: '',
-    date: '',
+    title: "",
+    location: "",
+    date: "",
     rating: 0,
     image: null,
-    content: ''
+    content: "",
   });
-  const [imagePreview, setImagePreview] = useState('');
+
+  const [reviewForm, setReviewForm] = useState({
+    user: mongoUser?.userName || "",
+    package: "",
+    tourId: "",
+    rating: 0,
+    text: "",
+    avatar: mongoUser?.userImage || "",
+    date: new Date().toISOString().split("T")[0],
+  });
+  const [imagePreview, setImagePreview] = useState("");
 
   // Calculate pagination for reviews
   const indexOfLastReview = currentReviewPage * reviewsPerPage;
@@ -77,23 +88,21 @@ const Reviews = () => {
   }, [axiosSecure]);
 
   useEffect(() => {
-      if (mongoUser?.userMail) {
-        fetchUserBookings();
-      }
-    }, [mongoUser]);
-  
-    const fetchUserBookings = async () => {
-      try {
-        const res = await axiosSecure.get(
-          `/payments/${mongoUser.userMail}`
-        );
-        setBookings(res.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching booking data:", error);
-        setLoading(false);
-      }
-    };
+    if (mongoUser?.userMail) {
+      fetchUserBookings();
+    }
+  }, [mongoUser]);
+
+  const fetchUserBookings = async () => {
+    try {
+      const res = await axiosSecure.get(`/payments/${mongoUser.userMail}`);
+      setBookings(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching booking data:", error);
+      setLoading(false);
+    }
+  };
 
   // Helpers for reviews
   const renderReviewStars = (count) => (
@@ -101,7 +110,9 @@ const Reviews = () => {
       {Array.from({ length: 5 }, (_, i) => (
         <FaStar
           key={i}
-          className={`text-lg ${i < count ? 'text-yellow-400' : 'text-gray-300'}`}
+          className={`text-lg ${
+            i < count ? "text-yellow-400" : "text-gray-300"
+          }`}
         />
       ))}
     </div>
@@ -111,7 +122,9 @@ const Reviews = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <FaStar
         key={i}
-        className={`text-xl cursor-pointer ${i < count ? 'text-yellow-400' : 'text-gray-300'}`}
+        className={`text-xl cursor-pointer ${
+          i < count ? "text-yellow-400" : "text-gray-300"
+        }`}
         onClick={() => handleStoryRating(i + 1)}
       />
     ));
@@ -140,21 +153,21 @@ const Reviews = () => {
     const submittedStory = {
       ...newStory,
       id: stories.length + 1,
-      image: imagePreview || 'https://placehold.co/600x400'
+      image: imagePreview || "https://placehold.co/600x400",
     };
     setStories((prev) => [submittedStory, ...prev]);
     setShowStoryModal(false);
     setNewStory({
-      title: '',
-      location: '',
-      date: '',
+      title: "",
+      location: "",
+      date: "",
       rating: 0,
       image: null,
-      content: ''
+      content: "",
     });
-    setImagePreview('');
-    alert('Your travel story has been shared!');
-    setCurrentStoryPage(1); 
+    setImagePreview("");
+    alert("Your travel story has been shared!");
+    setCurrentStoryPage(1);
   };
 
   // Pagination handlers
@@ -185,6 +198,64 @@ const Reviews = () => {
     }
   };
 
+  const handleReviewInputChange = (e) => {
+    const { name, value } = e.target;
+    setReviewForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRatingChange = (rating) => {
+    setReviewForm((prev) => ({ ...prev, rating }));
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const reviewData = {
+        ...reviewForm,
+        userMail: mongoUser?.userMail,
+        userName: mongoUser?.userName || "",
+        userPhoto: mongoUser?.userPhoto || "",
+        tourId: reviewForm.tourId,
+        tourTitle: reviewForm.package,
+        text: reviewForm.text,
+        date: new Date().toISOString(),
+      };
+
+      const response = await axiosSecure.post("/reviews", reviewData);
+
+      setReviews((prev) => [response.data, ...prev]);
+
+      setShowReviewModal(false);
+      setReviewForm({
+        user: mongoUser?.userName || "",
+        rating: 0,
+        text: "",
+        date: new Date().toISOString().split("T")[0],
+      });
+
+      if (response.data.insertedId) {
+        await Swal.fire({
+          icon: "success",
+          title: "Review submitted!",
+          text: "Your review has been submitted.",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Not found",
+        text: "No tour found with that ID",
+      });
+    }
+  };
+
+  console.log(mongoUser);
+  console.log(reviews);
+
   return (
     <>
       <Banner
@@ -192,24 +263,32 @@ const Reviews = () => {
         heading="Traveler Reviews & Stories"
         text="Discover authentic experiences shared by our community"
       />
-     
+
       <div className="bg-gradient-to-b from-blue-50 to-white py-12 px-4 lg:px-8">
         {/* Tab Navigation */}
         <div className="flex justify-center mb-12">
           <div className="tabs tabs-boxed bg-white shadow-md rounded-full">
             <button
-              className={`tab rounded-full px-6 ${activeTab === 'reviews' ? 'tab-active bg-gradient-to-r from-blue-500 to-indigo-500 text-white' : ''}`}
+              className={`tab rounded-full px-6 ${
+                activeTab === "reviews"
+                  ? "tab-active bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
+                  : ""
+              }`}
               onClick={() => {
-                setActiveTab('reviews');
+                setActiveTab("reviews");
                 setCurrentReviewPage(1);
               }}
             >
               <FaPenAlt className="mr-2" /> Traveler Reviews
             </button>
             <button
-              className={`tab rounded-full px-6 ${activeTab === 'stories' ? 'tab-active bg-gradient-to-r from-blue-500 to-indigo-500 text-white' : ''}`}
+              className={`tab rounded-full px-6 ${
+                activeTab === "stories"
+                  ? "tab-active bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
+                  : ""
+              }`}
               onClick={() => {
-                setActiveTab('stories');
+                setActiveTab("stories");
                 setCurrentStoryPage(1);
               }}
             >
@@ -217,9 +296,9 @@ const Reviews = () => {
             </button>
           </div>
         </div>
-   
+
         {/* Reviews Section */}
-        {activeTab === 'reviews' && (
+        {activeTab === "reviews" && (
           <div className="max-w-7xl mx-auto">
             {/* Reviews Header */}
             <div className="text-center mb-12">
@@ -236,28 +315,41 @@ const Reviews = () => {
                 <FaPenAlt /> Share Your Experience
               </button>
             </div>
-   
+
             {/* Reviews Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-              {currentReviews.map((review,index) => (
-                <div
-                  key={review.id}
-                  className="card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden hover:-translate-y-1"
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {currentReviews.map((review, index) => (
+                <motion.div
+                  key={review._id || index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white shadow-md hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden border border-gray-100"
                 >
-                  <div className="card-body p-6">
+                  <div className="p-6">
+                    {/* User Info */}
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="avatar">
-                        <div className="w-14 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                          <img src={review.avatar} alt={review.user} />
-                        </div>
+                      <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-primary ring-offset-2">
+                        <img
+                          src={review.userPhoto || review.avatar}
+                          alt={review.user}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-800">{review.user}</h3>
+                        <h3 className="font-semibold text-gray-800 text-lg">
+                          {review.userName || review.user}
+                        </h3>
                         <p className="text-sm text-gray-500 flex items-center gap-1">
-                          <FaCalendarAlt className="text-xs" /> {review.date}
+                          <FaCalendarAlt className="text-xs" />
+                          {new Date(review.date).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
+
+                    {/* Rating and Tour Info */}
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
                         {renderReviewStars(review.rating)}
@@ -266,12 +358,17 @@ const Reviews = () => {
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 flex items-center gap-1">
-                        <FaMapMarkerAlt className="text-xs" /> {review.package}
+                        <FaMapMarkerAlt className="text-xs" />
+                        {review.tourTitle || review.package}
                       </p>
                     </div>
-                    <p className="text-gray-700">{review.text}</p>
+
+                    {/* Review Text */}
+                    <p className="text-gray-700 leading-relaxed">
+                      {review.text}
+                    </p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
@@ -289,7 +386,11 @@ const Reviews = () => {
                   <button
                     key={i}
                     onClick={() => paginateReviews(i + 1)}
-                    className={`join-item btn ${currentReviewPage === i + 1 ? 'btn-active bg-blue-500 text-white' : 'bg-white'}`}
+                    className={`join-item btn ${
+                      currentReviewPage === i + 1
+                        ? "btn-active bg-blue-500 text-white"
+                        : "bg-white"
+                    }`}
                   >
                     {i + 1}
                   </button>
@@ -305,9 +406,9 @@ const Reviews = () => {
             </div>
           </div>
         )}
-   
+
         {/* Stories Section */}
-        {activeTab === 'stories' && (
+        {activeTab === "stories" && (
           <div className="max-w-7xl mx-auto">
             {/* Stories Header */}
             <div className="text-center mb-12">
@@ -315,7 +416,8 @@ const Reviews = () => {
                 Traveler Stories
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto my-4">
-                Share your adventures and inspire fellow travelers with your experiences
+                Share your adventures and inspire fellow travelers with your
+                experiences
               </p>
               <button
                 onClick={() => setShowStoryModal(true)}
@@ -324,7 +426,7 @@ const Reviews = () => {
                 <FaPaperPlane /> Share Your Story
               </button>
             </div>
-   
+
             {/* Stories Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
               {currentStories.map((story) => (
@@ -346,12 +448,18 @@ const Reviews = () => {
                   </figure>
                   <div className="card-body p-6">
                     <div className="flex justify-between items-start mb-2">
-                      <h2 className="card-title text-gray-800">{story.title}</h2>
+                      <h2 className="card-title text-gray-800">
+                        {story.title}
+                      </h2>
                       <div className="flex">
                         {Array.from({ length: 5 }, (_, i) => (
                           <FaStar
                             key={i}
-                            className={`text-sm ${i < story.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                            className={`text-sm ${
+                              i < story.rating
+                                ? "text-yellow-400"
+                                : "text-gray-300"
+                            }`}
                           />
                         ))}
                       </div>
@@ -359,7 +467,9 @@ const Reviews = () => {
                     <div className="flex items-center text-gray-500 text-sm mb-4">
                       <FaCalendarAlt className="mr-2" /> {story.date}
                     </div>
-                    <p className="text-gray-600 line-clamp-3">{story.content}</p>
+                    <p className="text-gray-600 line-clamp-3">
+                      {story.content}
+                    </p>
                     <div className="card-actions justify-end mt-4">
                       <button className="btn btn-sm btn-primary hover:bg-blue-600">
                         Read Full Story
@@ -384,7 +494,11 @@ const Reviews = () => {
                   <button
                     key={i}
                     onClick={() => paginateStories(i + 1)}
-                    className={`join-item btn ${currentStoryPage === i + 1 ? 'btn-active bg-blue-500 text-white' : 'bg-white'}`}
+                    className={`join-item btn ${
+                      currentStoryPage === i + 1
+                        ? "btn-active bg-blue-500 text-white"
+                        : "bg-white"
+                    }`}
                   >
                     {i + 1}
                   </button>
@@ -400,7 +514,7 @@ const Reviews = () => {
             </div>
           </div>
         )}
-   
+
         {/* Review Modal */}
         {showReviewModal && (
           <div className="modal modal-open">
@@ -414,13 +528,16 @@ const Reviews = () => {
               <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">
                 Share Your Experience
               </h3>
-              <form className="space-y-4">
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-medium">Your Name</span>
                   </label>
                   <input
                     type="text"
+                    name="user"
+                    value={reviewForm.user}
+                    onChange={handleReviewInputChange}
                     placeholder="John Doe"
                     className="input input-bordered w-full focus:ring-2 focus:ring-blue-500"
                     required
@@ -430,11 +547,31 @@ const Reviews = () => {
                   <label className="label">
                     <span className="label-text font-medium">Package Name</span>
                   </label>
-                  <select className="select select-bordered w-full focus:ring-2 focus:ring-blue-500" required>
+                  <select
+                    name="package"
+                    value={reviewForm.package}
+                    onChange={(e) => {
+                      const selectedIndex = e.target.selectedIndex;
+                      const selectedOption = e.target.options[selectedIndex];
+                      const tourId = selectedOption.getAttribute("data-id");
+                      const tourTitle = e.target.value;
+                      setReviewForm((prev) => ({
+                        ...prev,
+                        package: e.target.value,
+                        tourId: tourId,
+                      }));
+                    }}
+                    className="select select-bordered w-full focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
                     <option value="">Select a Package</option>
                     {bookings.map((pack, i) => (
-                      <option key={i} value={pack.title}>
-                        {pack.title}
+                      <option
+                        key={i}
+                        value={pack.tourTitle}
+                        data-id={pack.tourId}
+                      >
+                        {pack.tourTitle}
                       </option>
                     ))}
                   </select>
@@ -449,6 +586,8 @@ const Reviews = () => {
                         key={star}
                         type="radio"
                         name="rating"
+                        checked={reviewForm.rating === star}
+                        onChange={() => handleRatingChange(star)}
                         className="mask mask-star-2 bg-yellow-400"
                       />
                     ))}
@@ -456,9 +595,14 @@ const Reviews = () => {
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">Your Experience</span>
+                    <span className="label-text font-medium">
+                      Your Experience
+                    </span>
                   </label>
                   <textarea
+                    name="text"
+                    value={reviewForm.text}
+                    onChange={handleReviewInputChange}
                     className="textarea textarea-bordered h-32 focus:ring-2 focus:ring-blue-500"
                     placeholder="Tell us about your trip..."
                     required
@@ -472,7 +616,10 @@ const Reviews = () => {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary hover:bg-blue-600">
+                  <button
+                    type="submit"
+                    className="btn btn-primary hover:bg-blue-600"
+                  >
                     Submit Review
                   </button>
                 </div>
@@ -480,7 +627,7 @@ const Reviews = () => {
             </div>
           </div>
         )}
-   
+
         {/* Story Modal */}
         {showStoryModal && (
           <div className="modal modal-open">
@@ -498,7 +645,9 @@ const Reviews = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text font-medium">Story Title*</span>
+                      <span className="label-text font-medium">
+                        Story Title*
+                      </span>
                     </label>
                     <input
                       type="text"
@@ -512,7 +661,9 @@ const Reviews = () => {
                   </div>
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text font-medium">Package Name*</span>
+                      <span className="label-text font-medium">
+                        Package Name*
+                      </span>
                     </label>
                     <select
                       name="location"
@@ -547,7 +698,9 @@ const Reviews = () => {
                   </div>
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text font-medium">Your Rating*</span>
+                      <span className="label-text font-medium">
+                        Your Rating*
+                      </span>
                     </label>
                     <div className="flex items-center gap-2">
                       {renderStoryStars(newStory.rating)}
@@ -557,7 +710,9 @@ const Reviews = () => {
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">Featured Image</span>
+                    <span className="label-text font-medium">
+                      Featured Image
+                    </span>
                   </label>
                   {imagePreview ? (
                     <div className="relative mb-2">
@@ -570,7 +725,7 @@ const Reviews = () => {
                         type="button"
                         onClick={() => {
                           setNewStory((prev) => ({ ...prev, image: null }));
-                          setImagePreview('');
+                          setImagePreview("");
                         }}
                         className="btn btn-circle btn-sm absolute top-2 right-2 hover:bg-gray-100"
                       >
@@ -613,7 +768,10 @@ const Reviews = () => {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary hover:bg-blue-600">
+                  <button
+                    type="submit"
+                    className="btn btn-primary hover:bg-blue-600"
+                  >
                     Publish Story
                   </button>
                 </div>
