@@ -1,8 +1,5 @@
-import React, { useState } from 'react';
-import reviewpage from '../../../public/reviewpage.json';
+import React, { useEffect, useState } from 'react';
 import Blogs from '../../../public/Blogs.json';
-import tourPackages from '../../../public/tourPackages.json';
-import groupTourPackages from '../../../public/groupTourPackages.json';
 import {
   FaStar,
   FaPenAlt,
@@ -16,17 +13,21 @@ import {
 import { IoClose } from 'react-icons/io5';
 import Banner from "../Home/Banner/Banner";
 import backImage from '../../assets/banner3.jpg';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
+import useMongoUser from '../../hooks/userMongoUser';
 
 const Reviews = () => {
+
+  const {mongoUser}=useMongoUser()
   const [activeTab, setActiveTab] = useState('reviews');
-  const reviews = reviewpage;
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const axiosSecure = useAxiosSecure();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Import stories from Blogs.json file
   const [stories, setStories] = useState(Blogs);
-
-  // Combine package lists from both JSON files
-  const combinedPackages = [...tourPackages, ...groupTourPackages];
 
   // Pagination state for reviews
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
@@ -58,6 +59,41 @@ const Reviews = () => {
   const indexOfFirstStory = indexOfLastStory - storiesPerPage;
   const currentStories = stories.slice(indexOfFirstStory, indexOfLastStory);
   const totalStoryPages = Math.ceil(stories.length / storiesPerPage);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axiosSecure.get("/reviews");
+        setReviews(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        setLoading(false);
+      }
+    };
+    console.log(reviews);
+
+    fetchReviews();
+  }, [axiosSecure]);
+
+  useEffect(() => {
+      if (mongoUser?.userMail) {
+        fetchUserBookings();
+      }
+    }, [mongoUser]);
+  
+    const fetchUserBookings = async () => {
+      try {
+        const res = await axiosSecure.get(
+          `/payments/${mongoUser.userMail}`
+        );
+        setBookings(res.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching booking data:", error);
+        setLoading(false);
+      }
+    };
 
   // Helpers for reviews
   const renderReviewStars = (count) => (
@@ -118,7 +154,7 @@ const Reviews = () => {
     });
     setImagePreview('');
     alert('Your travel story has been shared!');
-    setCurrentStoryPage(1); // Reset to first page after adding new story
+    setCurrentStoryPage(1); 
   };
 
   // Pagination handlers
@@ -203,7 +239,7 @@ const Reviews = () => {
    
             {/* Reviews Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-              {currentReviews.map((review) => (
+              {currentReviews.map((review,index) => (
                 <div
                   key={review.id}
                   className="card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden hover:-translate-y-1"
@@ -396,7 +432,7 @@ const Reviews = () => {
                   </label>
                   <select className="select select-bordered w-full focus:ring-2 focus:ring-blue-500" required>
                     <option value="">Select a Package</option>
-                    {combinedPackages.map((pack, i) => (
+                    {bookings.map((pack, i) => (
                       <option key={i} value={pack.title}>
                         {pack.title}
                       </option>
@@ -486,7 +522,7 @@ const Reviews = () => {
                       required
                     >
                       <option value="">Select a Package</option>
-                      {combinedPackages.map((pack, i) => (
+                      {bookings.map((pack, i) => (
                         <option key={i} value={pack.title}>
                           {pack.title}
                         </option>

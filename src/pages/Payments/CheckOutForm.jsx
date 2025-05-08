@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const CheckOutForm = () => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
-  const { totalPrice, tourId, userName, userEmail } = location.state || {};
+  const { totalPrice, tourId, tourTitle, userName, userEmail } = location.state || {};
 
   const stripe = useStripe();
   const elements = useElements();
@@ -83,6 +83,7 @@ const CheckOutForm = () => {
       const paymentData = {
         transactionId: paymentIntent.id,
         tourId,
+        tourTitle,
         userEmail,
         userName,
         price: totalPrice,

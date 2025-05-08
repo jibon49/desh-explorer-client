@@ -606,6 +606,7 @@ const GroupTour = () => {
                   
                   state={{
                     totalPrice: selectedTour.price * person,
+                    tourTitle: selectedTour.title,
                     tourId: selectedTour._id,
                     userName: mongoUser?.userName || "Anonymous",
                     userEmail: mongoUser?.userMail || "anonymous",

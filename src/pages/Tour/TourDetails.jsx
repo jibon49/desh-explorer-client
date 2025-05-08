@@ -400,6 +400,7 @@ const TourDetails = () => {
                   state={{
                     totalPrice: tour.price * travelers,
                     tourId: tour._id,
+                    tourTitle: tour.title,
                     userName: user?.displayName || "Anonymous",
                     userEmail: user?.email || "anonymous",
                   }}
