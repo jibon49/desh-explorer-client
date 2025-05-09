@@ -119,12 +119,12 @@ const Navbar = () => {
                 </li>
               </ul>
             </div>
-            <button onClick={handleLogout} className="hover:text-site-main font-semibold">Logout</button>
+            <button onClick={handleLogout} className="hover:text-site-main font-semibold ">Logout</button>
           </div>
         ) : (
           <div className="flex items-center gap-3">
             <img src={userImg} alt="user avatar" className="w-10 h-10 rounded-full" />
-            <NavLink to="/login" className="hover:text-site-main font-semibold">
+            <NavLink to="/login" className="hover:text-site-main font-semibold ">
               Login
             </NavLink>
           </div>
