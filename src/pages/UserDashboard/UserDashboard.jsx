@@ -16,8 +16,8 @@ const userDashboard = () => {
     <>
       <Banner
         bgImage={backImage}
-        heading="Tour Packages"
-        text="Explore amazing destinations with our curated tour plans."
+        heading="User Profile"
+        text="Manage your profile and preferences."
       />
       <div>
         {/* name of each tab group should be unique */}
