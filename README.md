@@ -1,74 +1,49 @@
-Desh Explorer Client
-A React + Vite project scaffolded for rapid development with Hot Module Replacement (HMR) and ESLint integration.​
+# 🌍 Desh Explorer - Simplify travel, Amplify adventure
 
-Features
-⚡ Vite for fast builds and development server
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Desh%20Explorer-blue?style=for-the-badge&logo=firebase)](https://desh-explorer.web.app)
 
-⚛️ React with support for Fast Refresh
 
-🧹 ESLint configured for code quality
 
-📁 Organized project structure with src and public directories​
+Desh Explorer is a full-stack travel platform dedicated to showcasing the beauty of Bangladesh. Discover curated tour packages, read authentic traveler stories, and plan your next adventure with ease.
 
-Getting Started
-Prerequisites
-Node.js (version 14 or higher)
+## ✨ Features
 
-npm or Yarn​
+- 🏝️ Discover handpicked tour packages, group tour packages across World
+- 📝 Customize your own tour and travel package with prefered transportation service
+- 📖 Read and share travel stories from fellow explorers
+- ⭐ Rate and review travel experiences
+- 💬 Interactive community with comments and likes
+- 🔍 Advanced search and filtering options
+- 🔐 Secure authentication system
+- 👤 Interactive user dashboard
+- 📱 Fully responsive design for all devices
 
-Installation
-Clone the repository:​
+## 🚀 Tech Stack
 
-bash
-Copy
-Edit
-git clone https://github.com/jibon49/desh-explorer-client.git
-Navigate to the project directory:​
+### Frontend
+- ⚛️ React 18
+- 🚀 Vite (Next Generation Frontend Tooling)
+- 🔥 Firebase Hosting
+- 🎨 Tailwind CSS
+- 💳 Strip payment gateway
+- 📱 DaisyUI (Component Library)
+- 🔄 React Hook Form
+- 📅 React Date Picker
+- 🖼️ ImageBB (Image Hosting)
 
-bash
-Copy
-Edit
-cd desh-explorer-client
-Install dependencies:​
+### Backend
+- 🛠️ Node.js
+- 🚂 Express.js
+- 🍃 MongoDB (Database)
+- 🔐 JWT Authentication
+- 💳 Stripe Payment Integration
 
-bash
-Copy
-Edit
-npm install
-# or
-yarn install
-Running the Development Server
-bash
-Copy
-Edit
-npm run dev
-# or
-yarn dev
-The application will be available at http://localhost:5173/ by default.​
 
-Building for Production
-bash
-Copy
-Edit
-npm run build
-# or
-yarn build
-The optimized production build will be in the dist folder.​
+## 🛠️ Installation
 
-Project Structure
-plaintext
-Copy
-Edit
-desh-explorer-client/
-├── public/             # Static assets
-├── src/                # Source code
-├── .gitignore
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-Contributing
-Contributions are welcome! Please fork the repository and submit a pull request.​
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+- MongoDB Atlas account (for database)
+- Firebase account
 
-License
-This project is licensed under the MIT License. See the LICENSE file for details.
