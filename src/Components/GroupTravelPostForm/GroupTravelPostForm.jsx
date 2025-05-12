@@ -236,7 +236,6 @@ const GroupTravelPostForm = () => {
                 </div>
               </div>
 
-           
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Departure Date */}
                 <div className="form-control">
@@ -496,21 +495,27 @@ const GroupTravelPostForm = () => {
             </div>
 
             <div className="flex justify-end pt-4">
-              <button type="submit" className="btn btn-primary px-8">
-                Create Tour Post
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 ml-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
+              {user ? (
+                <button type="submit" className="btn btn-primary px-8">
+                  Create Tour Post
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              ) : (
+                <p className="text-red-500 font-semibold">
+                  Please log in to create a post.
+                </p>
+              )}
             </div>
           </form>
         </div>

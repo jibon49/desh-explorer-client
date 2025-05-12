@@ -72,6 +72,11 @@ const userDashboard = () => {
             {role === "admin" && <AdminPanel />}
             {role === "host" && <HostPanel></HostPanel>}
             {role === "member" && <UserPanel></UserPanel>}
+            {role === null && (
+              <div className="text-center text-lg font-semibold text-gray-700">
+                Please Login first to access the dashboard.
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -16,6 +16,7 @@ import AboutUs from "../pages/AboutUs/AboutUs";
 import Payments from "../pages/Payments/Payments";
 import CheckOut from "../pages/Payments/CheckOut";
 import Reviews from "../pages/BlogsReview/Reviews";
+import PrivateRoute from "../PrivateRoute/PrivateRoute";
 
   export const router = createBrowserRouter([
     {
@@ -56,11 +57,11 @@ import Reviews from "../pages/BlogsReview/Reviews";
         },
         {
           path:'complain-form',
-          element:<ComplainForm></ComplainForm>
+          element:<PrivateRoute><ComplainForm></ComplainForm></PrivateRoute>
         },
         {
           path:'review',
-          element:<Reviews></Reviews>
+          element:<PrivateRoute><Reviews></Reviews></PrivateRoute>
         },
         {
           path:"aboutus",
@@ -68,7 +69,7 @@ import Reviews from "../pages/BlogsReview/Reviews";
         },
         {
           path:"checkout",
-          element:<CheckOut></CheckOut>
+          element:<PrivateRoute><CheckOut></CheckOut></PrivateRoute>
         },
       ]
     },
