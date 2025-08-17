@@ -262,23 +262,82 @@ Revolutionary feature allowing users to:
 
 ---
 
-## 🤝 Contributing
+## 👥 Core Contributors
 
-We welcome contributions! Here's how you can help:
+<div align="center">
 
-1. 🍴 Fork the repository
-2. 🌿 Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
-5. 🔄 Open a Pull Request
+**Meet the talented team behind Desh Explorer**
 
-### 📋 Contribution Guidelines
-- Follow the existing code style and conventions
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation as needed
+</div>
+
+<table>
+<tr>
+<td align="center" width="50%">
+<a href="https://github.com/jibon49">
+<img src="https://github.com/jibon49.png" width="100" style="border-radius: 50%"/>
+<br>
+<strong>Jibon49</strong>
+</a>
+<br>
+<sub><b>MERN Stack Developer</b></sub>
+<br>
+<br>
+🛠️ <strong>Expertise:</strong>
+<br>
+• Full-Stack Development (MERN)
+<br>
+• Backend Architecture & APIs
+<br>
+• Database Design (MongoDB)
+<br>
+• Payment Integration (Stripe/SSLCommerz)
+<br>
+• Authentication & Security (JWT/Firebase)
+<br>
+<br>
+<a href="https://github.com/jibon49">
+<img src="https://img.shields.io/badge/GitHub-jibon49-black?style=flat-square&logo=github"/>
+</a>
+</td>
+<td align="center" width="50%">
+<a href="https://github.com/Raiyan91200">
+<img src="https://github.com/Raiyan91200.png" width="100" style="border-radius: 50%"/>
+<br>
+<strong>Raiyan</strong>
+</a>
+<br>
+<sub><b>Frontend Lead & Project Manager</b></sub>
+<br>
+<br>
+🎨 <strong>Expertise:</strong>
+<br>
+• Frontend Development (React/Vite)
+<br>
+• UI/UX Design & Implementation
+<br>
+• Project Management & Planning
+<br>
+• Responsive Design (Tailwind/DaisyUI)
+<br>
+<a href="https://github.com/Raiyan91200">
+<img src="https://img.shields.io/badge/GitHub-Raiyan91200-black?style=flat-square&logo=github"/>
+</a>
+</td>
+</tr>
+</table>
+
+### 🌟 **Our Development Philosophy**
+
+> *"We believe in creating travel experiences that are not just functional, but delightful. Every line of code is written with the traveler's journey in mind."*
+
+**🚀 What Makes Our Team Special:**
+- **💡 Innovation First**: Always exploring cutting-edge technologies to enhance user experience
+- **🔍 Attention to Detail**: Meticulous focus on performance, security, and user interface
+- **🌐 Global Perspective**: Understanding diverse travel needs across different cultures
+- **🤝 Collaborative Spirit**: Seamless teamwork between frontend innovation and backend reliability
 
 ---
+
 
 ## 📄 License
 
